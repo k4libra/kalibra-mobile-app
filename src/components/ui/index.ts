@@ -11,6 +11,7 @@ export { Chip, type ChipProps } from './Chip';
 export { ConfirmDialog, type ConfirmDialogProps } from './ConfirmDialog';
 export { EmptyState, type EmptyStateProps } from './EmptyState';
 export { ErrorState, type ErrorStateProps } from './ErrorState';
+export { HeroBanner, type HeroBannerProps, type HeroBannerTone } from './HeroBanner';
 export { Icon, type IconProps, type IconSize } from './Icon';
 export { IconBox, type IconBoxProps, type IconBoxSize } from './IconBox';
 export { LoadingState, type LoadingStateProps } from './LoadingState';
