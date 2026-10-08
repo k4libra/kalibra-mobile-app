@@ -11,6 +11,8 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { BottomTabBar } from '@/components/layout';
 import { CourseSubtopicsScreen } from '@/screens/CourseSubtopicsScreen';
 import { EnrollmentConfirmedScreen } from '@/screens/EnrollmentConfirmedScreen';
+import { ExerciseResultScreen } from '@/screens/ExerciseResultScreen';
+import { ExerciseScreen } from '@/screens/ExerciseScreen';
 import { InvitationsScreen } from '@/screens/InvitationsScreen';
 import { MyCoursesScreen } from '@/screens/MyCoursesScreen';
 import { PlaceholderScreen } from '@/screens/PlaceholderScreen';
@@ -25,8 +27,6 @@ const HistoryTab = () => <PlaceholderScreen title="Historial" branch="feature/pr
 const ProfileTab = () => <PlaceholderScreen title="Perfil" branch="feature/auth-profile" />;
 const SignInScreen = () => <PlaceholderScreen title="Inicio de sesión" branch="feature/auth-profile" />;
 const SignUpScreen = () => <PlaceholderScreen title="Registro" branch="feature/auth-profile" />;
-const ExerciseScreen = () => <PlaceholderScreen title="Práctica de ejercicio" branch="feature/adaptive-practice" />;
-const ExerciseResultScreen = () => <PlaceholderScreen title="Resultado" branch="feature/adaptive-practice" />;
 
 // Renders the custom bottom bar of the design system.
 const renderTabBar = (props: React.ComponentProps<typeof BottomTabBar>) => <BottomTabBar {...props} />;

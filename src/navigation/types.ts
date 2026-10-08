@@ -29,7 +29,7 @@ export type RootStackParamList = {
   Invitations: undefined;
   EnrollmentConfirmed: { invitationId: string };
   Exercise: { courseId: string; subtopicId: string };
-  ExerciseResult: { exerciseId: string; optionId: string };
+  ExerciseResult: { attemptId: string };
 };
 
 /**
