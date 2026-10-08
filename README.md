@@ -24,8 +24,9 @@ App del estudiante de Kalibra (React Native): cursos e invitaciones, práctica a
 
 | Paquete | Versión fijada | Motivo |
 | --- | --- | --- |
-| — | — | Sin downgrades por ahora |
+| — | — | Sin downgrades: el build iOS compila con RN 0.87.1 + `react-native-screens` 4.28.0 (verificado 2026-10-08) |
 
+- **Simulador iOS 27:** la app compila pero se cierra al abrir porque iOS 27 exige el ciclo de vida UIScene y la plantilla de RN 0.87 aún usa `AppDelegate` sin escenas (`UIApplicationEvaluateRuntimeIssueForNoSceneLifecycleAdoption`). Usa un simulador iOS 26.x hasta adoptar UIScene en `ios/Kalibra/AppDelegate.swift`.
 - TypeScript 6 deprecó `baseUrl`: el alias `@/` usa solo `paths` en `tsconfig.json`.
 
 ## Fuentes e íconos
