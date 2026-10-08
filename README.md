@@ -1,97 +1,82 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# Kalibra Mobile App
 
-# Getting Started
+App del estudiante de Kalibra (React Native): cursos e invitaciones, práctica adaptativa, progreso, historial y perfil.
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+> Estado actual: **solo interfaz y navegación**. No hay integración con la API; los datos salen de servicios simulados (`src/mocks`).
 
-## Step 1: Start Metro
+## Stack
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+| Paquete | Versión |
+| --- | --- |
+| React Native | 0.87.1 |
+| React | 19.2.3 |
+| TypeScript | 6.0 |
+| @react-navigation/native | 7.5.0 |
+| @react-navigation/native-stack · bottom-tabs | 7.20.0 |
+| react-native-screens | 4.28.0 |
+| react-native-safe-area-context | 5.x |
+| babel-plugin-module-resolver (alias `@/`) | 5.0.3 |
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+### Compatibilidad y versiones fijadas
 
-```sh
-# Using npm
-npm start
+- React Native 0.87 es muy reciente. Los `peerDependencies` de `react-native-screens` aceptan cualquier versión de React Native, así que la compatibilidad se valida compilando la app nativa (ver «Verificación nativa»).
+- Si un build nativo falla por `react-native-screens`, baja a la última 4.x que compile y registra aquí la versión y el motivo:
 
-# OR using Yarn
-yarn start
+| Paquete | Versión fijada | Motivo |
+| --- | --- | --- |
+| — | — | Sin downgrades por ahora |
+
+- TypeScript 6 deprecó `baseUrl`: el alias `@/` usa solo `paths` en `tsconfig.json`.
+
+## Fuentes e íconos
+
+- Plus Jakarta Sans (Regular, Medium, SemiBold, Bold) y Material Symbols Rounded viven en `src/assets/fonts` y se enlazan con `react-native.config.js`.
+- Tras agregar o cambiar una fuente: `npx react-native-asset`.
+- Los nombres de archivo coinciden con el nombre PostScript para que funcionen igual en iOS y Android.
+
+## Scripts
+
+```bash
+npm install
+cd ios && bundle install && bundle exec pod install && cd ..
+npm start          # Metro
+npm run ios        # simulador iOS
+npm run android    # emulador Android
+npm run lint
+npx tsc --noEmit
+npm test
 ```
 
-## Step 2: Build and run your app
+Para ver los estados vacíos (sin cursos) cambia `MOCK_SCENARIO` a `'empty'` en `src/mocks/scenario.ts`.
 
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
+## Arquitectura por capas
 
-### Android
-
-```sh
-# Using npm
-npm run android
-
-# OR using Yarn
-yarn android
+```
+src/
+├── components/ui        primitivos del sistema de diseño (Text, Icon, Button, Chip, ConfirmDialog…)
+├── components/layout    AppHeader, BottomTabBar, ScreenContainer, BackLink
+├── components/<feature> componentes de cada funcionalidad
+├── screens              una pantalla por ruta
+├── hooks                estado de cada vista; único puente hacia services
+├── services             contratos y servicios (hoy apuntan a mocks)
+├── mocks                datos de ejemplo y servicios simulados
+├── navigation           stack raíz, tabs y tipos de rutas
+├── theme                tokens (mismo contenido que `@theme` de kalibra-web-app)
+├── types                modelos de dominio y variantes de UI
+└── utils                funciones puras
 ```
 
-### iOS
+Los cursos, subtemas y ejercicios son datos: ninguna pantalla depende de un curso concreto.
 
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
+## Ramas
 
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
+Toda rama nace de `develop`.
 
-```sh
-bundle install
-```
+| Rama | Responsable |
+| --- | --- |
+| `feature/auth-profile` | compañero |
+| `feature/courses-enrollment` | Gonzalo |
+| `feature/adaptive-practice` | Gonzalo |
+| `feature/progress-history` | compañero |
 
-Then, and every time you update your native dependencies, run:
-
-```sh
-bundle exec pod install
-```
-
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
-
-```sh
-# Using npm
-npm run ios
-
-# OR using Yarn
-yarn ios
-```
-
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
-
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
-
-## Step 3: Modify your app
-
-Now that you have successfully run the app, let's make changes!
-
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
-
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
-
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
-
-## Congratulations! :tada:
-
-You've successfully run and modified your React Native App. :partying_face:
-
-### Now what?
-
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
-
-# Troubleshooting
-
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
-
-# Learn More
-
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+Las pantallas de otras ramas muestran `PlaceholderScreen` hasta que se integran.
