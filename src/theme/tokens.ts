@@ -8,7 +8,7 @@
  * @packageDocumentation
  */
 
-import type { TextStyle, ViewStyle } from 'react-native';
+import { Platform, type TextStyle, type ViewStyle } from 'react-native';
 
 /**
  * Semantic colors of the design system.
@@ -92,7 +92,8 @@ export const fonts = {
   semiBold: 'PlusJakartaSans-SemiBold',
   bold: 'PlusJakartaSans-Bold',
   icons: 'MaterialSymbolsRounded-Regular',
-  mono: 'Menlo',
+  // Menlo only ships with iOS; Android uses its system monospace family.
+  mono: Platform.select({ ios: 'Menlo', default: 'monospace' }),
 } as const;
 
 /**
