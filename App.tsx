@@ -1,45 +1,33 @@
 /**
- * Sample React Native App
- * https://github.com/facebook/react-native
+ * Root component: global providers and navigation.
  *
- * @format
+ * @author G0nz4loQu3dena
+ * @packageDocumentation
  */
 
-import { NewAppScreen } from '@react-native/new-app-screen';
-import { StatusBar, StyleSheet, useColorScheme, View } from 'react-native';
-import {
-  SafeAreaProvider,
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context';
+import React from 'react';
+import { StatusBar } from 'react-native';
+import { DefaultTheme, NavigationContainer, type Theme } from '@react-navigation/native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { RootNavigator } from '@/navigation/RootNavigator';
+import { colors } from '@/theme/tokens';
 
-function App() {
-  const isDarkMode = useColorScheme() === 'dark';
+// Navigation theme aligned with the design system surfaces.
+const NAVIGATION_THEME: Theme = {
+  ...DefaultTheme,
+  colors: { ...DefaultTheme.colors, primary: colors.primary, background: colors.surfaceBackground, card: colors.surfaceBackground },
+};
 
+/**
+ * Mounts the safe area provider, the navigation container and the root navigator.
+ */
+export default function App() {
   return (
     <SafeAreaProvider>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <AppContent />
+      <StatusBar barStyle="dark-content" />
+      <NavigationContainer theme={NAVIGATION_THEME}>
+        <RootNavigator />
+      </NavigationContainer>
     </SafeAreaProvider>
   );
 }
-
-function AppContent() {
-  const safeAreaInsets = useSafeAreaInsets();
-
-  return (
-    <View style={styles.container}>
-      <NewAppScreen
-        templateFileName="App.tsx"
-        safeAreaInsets={safeAreaInsets}
-      />
-    </View>
-  );
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});
-
-export default App;
