@@ -11,14 +11,16 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { BottomTabBar } from '@/components/layout';
 import { PlaceholderScreen } from '@/screens/PlaceholderScreen';
 import type { RootStackParamList, TabParamList } from './types';
-
+import { ProgressScreen } from '@/screens/ProgressScreen';
+import { HistoryScreen } from '@/screens/HistoryScreen';
+import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<TabParamList>();
 
 // Each feature branch replaces the placeholder of the screens it owns.
 const CoursesTab = () => <PlaceholderScreen title="Mis cursos" branch="feature/courses-enrollment" />;
-const ProgressTab = () => <PlaceholderScreen title="Mi progreso" branch="feature/progress-history" />;
-const HistoryTab = () => <PlaceholderScreen title="Historial" branch="feature/progress-history" />;
+const ProgressTab = ({navigation,}: BottomTabScreenProps<TabParamList, 'Progress'>) => (<ProgressScreen onOpenHistory={() => navigation.navigate('History')}/>);
+const HistoryTab = ({navigation,}: BottomTabScreenProps<TabParamList, 'History'>) => (<HistoryScreen onBack={() => navigation.navigate('Progress')}/>);
 const ProfileTab = () => <PlaceholderScreen title="Perfil" branch="feature/auth-profile" />;
 const SignInScreen = () => <PlaceholderScreen title="Inicio de sesión" branch="feature/auth-profile" />;
 const SignUpScreen = () => <PlaceholderScreen title="Registro" branch="feature/auth-profile" />;
