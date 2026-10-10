@@ -12,6 +12,12 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { BottomTabBar } from '@/components/layout';
+import { CourseSubtopicsScreen } from '@/screens/CourseSubtopicsScreen';
+import { EnrollmentConfirmedScreen } from '@/screens/EnrollmentConfirmedScreen';
+import { ExerciseResultScreen } from '@/screens/ExerciseResultScreen';
+import { ExerciseScreen } from '@/screens/ExerciseScreen';
+import { InvitationsScreen } from '@/screens/InvitationsScreen';
+import { MyCoursesScreen } from '@/screens/MyCoursesScreen';
 import { PlaceholderScreen } from '@/screens/PlaceholderScreen';
 
 import { SignInScreen } from '@/screens/SignInScreen';
@@ -25,14 +31,8 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<TabParamList>();
 
 // Each feature branch replaces the placeholder of the screens it owns.
-const CoursesTab = () => <PlaceholderScreen title="Mis cursos" branch="feature/courses-enrollment" />;
 const ProgressTab = () => <PlaceholderScreen title="Mi progreso" branch="feature/progress-history" />;
 const HistoryTab = () => <PlaceholderScreen title="Historial" branch="feature/progress-history" />;
-const CourseSubtopicsScreen = () => <PlaceholderScreen title="Subtemas" branch="feature/courses-enrollment" />;
-const InvitationsScreen = () => <PlaceholderScreen title="Invitaciones" branch="feature/courses-enrollment" />;
-const EnrollmentConfirmedScreen = () => <PlaceholderScreen title="Matrícula" branch="feature/courses-enrollment" />;
-const ExerciseScreen = () => <PlaceholderScreen title="Práctica de ejercicio" branch="feature/adaptive-practice" />;
-const ExerciseResultScreen = () => <PlaceholderScreen title="Resultado" branch="feature/adaptive-practice" />;
 
 // Renders the custom bottom bar of the design system.
 const renderTabBar = (props: React.ComponentProps<typeof BottomTabBar>) => <BottomTabBar {...props} />;
@@ -41,14 +41,14 @@ const renderTabBar = (props: React.ComponentProps<typeof BottomTabBar>) => <Bott
  * Renders the four main tabs of the app.
  */
 function MainTabs() {
-    return (
-        <Tab.Navigator screenOptions={{ headerShown: false }} tabBar={renderTabBar}>
-            <Tab.Screen name="Courses" component={CoursesTab} />
-            <Tab.Screen name="Progress" component={ProgressTab} />
-            <Tab.Screen name="History" component={HistoryTab} />
-            <Tab.Screen name="Profile" component={ProfileScreen} />
-        </Tab.Navigator>
-    );
+  return (
+    <Tab.Navigator screenOptions={{ headerShown: false }} tabBar={renderTabBar}>
+      <Tab.Screen name="Courses" component={MyCoursesScreen} />
+      <Tab.Screen name="Progress" component={ProgressTab} />
+      <Tab.Screen name="History" component={HistoryTab} />
+      <Tab.Screen name="Profile" component={ProfileScreen} />
+    </Tab.Navigator>
+  );
 }
 
 /**
