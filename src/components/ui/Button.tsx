@@ -6,7 +6,7 @@
  */
 
 import React from 'react';
-import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import { colors, radius, shadows, spacing } from '@/theme/tokens';
 import type { ButtonSize, ButtonVariant, IconName } from '@/types/ui';
 import { Icon } from './Icon';
@@ -25,7 +25,7 @@ const VARIANT: Record<ButtonVariant, { background: string; content: string }> = 
 // Height and padding of each size.
 const SIZE: Record<ButtonSize, ViewStyle> = {
   md: { minHeight: 52, paddingHorizontal: spacing.xxl, borderRadius: radius.md },
-  sm: { minHeight: 36, paddingHorizontal: spacing.lg, borderRadius: radius.md },
+  sm: { minHeight: 44, paddingHorizontal: spacing.lg, borderRadius: radius.md },
 };
 
 /**
@@ -60,6 +60,12 @@ export interface ButtonProps {
    * @defaultValue `false`
    */
   disabled?: boolean;
+  /**
+   * Shows an activity indicator and blocks interaction.
+   *
+   * @defaultValue `false`
+   */
+  loading?: boolean;
   /** Called when the user taps the button. */
   onPress?: () => void;
   /** Layout adjustments from the parent (width, margins, flex). */
@@ -84,6 +90,7 @@ export function Button({
   icon,
   iconPosition = 'end',
   disabled = false,
+  loading = false,
   onPress,
   style,
 }: ButtonProps) {
@@ -92,8 +99,8 @@ export function Button({
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={label}
-      accessibilityState={{ disabled }}
-      disabled={disabled}
+      accessibilityState={{ disabled: disabled || loading, busy: loading }}
+      disabled={disabled || loading}
       onPress={onPress}
       style={({ pressed }) => [
         styles.base,
@@ -105,7 +112,8 @@ export function Button({
       ]}
     >
       <View style={styles.content}>
-        {icon && iconPosition === 'start' && <Icon name={icon} size="md" color={palette.content} />}
+        {loading && <ActivityIndicator color={palette.content} />}
+        {icon && !loading && iconPosition === 'start' && <Icon name={icon} size="md" color={palette.content} />}
         <Text variant="labelL" style={{ color: palette.content }}>
           {label}
         </Text>

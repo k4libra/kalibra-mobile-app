@@ -5,7 +5,8 @@
  * @packageDocumentation
  */
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useContext, useEffect, useState } from 'react';
+import { AuthContext } from '@/context/AuthContext';
 
 /**
  * State exposed by {@link useResource}.
@@ -28,7 +29,7 @@ export interface ResourceState<T> {
  *
  * @remarks
  * The loader runs again whenever `key` changes. Responses that arrive after unmounting or after a
- * newer request are ignored.
+ * newer request are ignored. Account changes invalidate every read and hide previous account data.
  *
  * @typeParam T - Shape of the loaded data.
  * @param loader - Function that returns the data; usually a service method.
@@ -42,7 +43,9 @@ export interface ResourceState<T> {
  */
 export function useResource<T>(loader: () => Promise<T>, key: string): ResourceState<T> {
   const [version, setVersion] = useState(0);
-  const requestKey = `${key}#${version}`;
+  const session = useContext(AuthContext)?.session;
+  const accountKey = session?.accessToken ?? 'signed-out';
+  const requestKey = `${accountKey}:${key}#${version}`;
   const [result, setResult] = useState<{ requestKey: string | null; data: T | null; error: string | null }>({
     requestKey: null,
     data: null,
@@ -57,7 +60,7 @@ export function useResource<T>(loader: () => Promise<T>, key: string): ResourceS
       })
       .catch((reason: unknown) => {
         const error = reason instanceof Error ? reason.message : 'No se pudo cargar la información.';
-        if (isCurrent) setResult(previous => ({ requestKey, data: previous.data, error }));
+        if (isCurrent) setResult(previous => ({ requestKey, data: previous.requestKey === requestKey ? previous.data : null, error }));
       });
     return () => {
       isCurrent = false;
@@ -67,5 +70,6 @@ export function useResource<T>(loader: () => Promise<T>, key: string): ResourceS
   }, [requestKey]);
 
   const refetch = useCallback(() => setVersion(value => value + 1), []);
-  return { data: result.data, isLoading: result.requestKey !== requestKey, error: result.error, refetch };
+  const isLoading = result.requestKey !== requestKey;
+  return { data: isLoading ? null : result.data, isLoading, error: isLoading ? null : result.error, refetch };
 }

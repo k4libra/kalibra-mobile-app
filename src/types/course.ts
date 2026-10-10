@@ -71,7 +71,7 @@ export interface Student {
   /** Current academic term, for example `2025-I`. */
   term: string;
   /** Profile photo. */
-  avatar: ImageSourcePropType;
+  avatar: ImageSourcePropType | undefined;
   /** Exercises solved across every course. */
   solvedExerciseCount: number;
   /** Average mastery across every course, from 0 to 100. */
