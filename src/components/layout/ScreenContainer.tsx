@@ -20,6 +20,12 @@ export interface ScreenContainerProps {
   children: React.ReactNode;
   /** Action pinned at the bottom of the screen, such as a submit button. */
   footer?: React.ReactNode;
+  /**
+   * Content spacing preset.
+   *
+   * @defaultValue `'default'`
+   */
+  variant?: 'default' | 'profile';
 }
 
 /**
@@ -30,12 +36,12 @@ export interface ScreenContainerProps {
  * <ScreenContainer header={<AppHeader />}>...</ScreenContainer>
  * ```
  */
-export function ScreenContainer({ header, children, footer }: ScreenContainerProps) {
+export function ScreenContainer({ header, children, footer, variant = 'default' }: ScreenContainerProps) {
   const insets = useSafeAreaInsets();
   return (
     <View style={styles.screen}>
       {header}
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={[styles.content, variant === 'profile' && styles.profile]} showsVerticalScrollIndicator={false}>
         {children}
       </ScrollView>
       {footer && <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, spacing.xl) }]}>{footer}</View>}
@@ -44,6 +50,7 @@ export function ScreenContainer({ header, children, footer }: ScreenContainerPro
 }
 
 const styles = StyleSheet.create({
+  profile: { paddingTop: spacing.xs, paddingBottom: spacing.pageTop, flexGrow: 1 },
   screen: { flex: 1, backgroundColor: colors.surfaceBackground },
   content: { gap: spacing.xxxl, paddingHorizontal: spacing.gutter, paddingTop: spacing.xxxl, paddingBottom: spacing.pageBottom, maxWidth: 600, width: '100%', alignSelf: 'center' },
   footer: { paddingHorizontal: spacing.gutter, paddingTop: spacing.lg, backgroundColor: colors.surfaceBackground },
