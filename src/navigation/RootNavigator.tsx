@@ -1,3 +1,4 @@
+
 /**
  * Navigators of the student app.
  *
@@ -6,27 +7,32 @@
  */
 
 import React from 'react';
+import { StyleSheet, View } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+
+import { LoadingState } from '@/components/ui';
+import { colors } from '@/theme/tokens';
 import { BottomTabBar } from '@/components/layout';
-import { PlaceholderScreen } from '@/screens/PlaceholderScreen';
+import { CourseSubtopicsScreen } from '@/screens/CourseSubtopicsScreen';
+import { EnrollmentConfirmedScreen } from '@/screens/EnrollmentConfirmedScreen';
+import { ExerciseResultScreen } from '@/screens/ExerciseResultScreen';
+import { ExerciseScreen } from '@/screens/ExerciseScreen';
+import { InvitationsScreen } from '@/screens/InvitationsScreen';
+import { MyCoursesScreen } from '@/screens/MyCoursesScreen';
+import { HistoryScreen } from '@/screens/HistoryScreen';
+import { ProgressScreen } from '@/screens/ProgressScreen';
+
+import { SignInScreen } from '@/screens/SignInScreen';
+import { SignUpScreen } from '@/screens/SignUpScreen';
+import { ProfileScreen } from '@/screens/ProfileScreen';
+import { useAuth } from '@/hooks/useAuth';
+
 import type { RootStackParamList, TabParamList } from './types';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<TabParamList>();
 
-// Each feature branch replaces the placeholder of the screens it owns.
-const CoursesTab = () => <PlaceholderScreen title="Mis cursos" branch="feature/courses-enrollment" />;
-const ProgressTab = () => <PlaceholderScreen title="Mi progreso" branch="feature/progress-history" />;
-const HistoryTab = () => <PlaceholderScreen title="Historial" branch="feature/progress-history" />;
-const ProfileTab = () => <PlaceholderScreen title="Perfil" branch="feature/auth-profile" />;
-const SignInScreen = () => <PlaceholderScreen title="Inicio de sesión" branch="feature/auth-profile" />;
-const SignUpScreen = () => <PlaceholderScreen title="Registro" branch="feature/auth-profile" />;
-const CourseSubtopicsScreen = () => <PlaceholderScreen title="Subtemas" branch="feature/courses-enrollment" />;
-const InvitationsScreen = () => <PlaceholderScreen title="Invitaciones" branch="feature/courses-enrollment" />;
-const EnrollmentConfirmedScreen = () => <PlaceholderScreen title="Matrícula" branch="feature/courses-enrollment" />;
-const ExerciseScreen = () => <PlaceholderScreen title="Práctica de ejercicio" branch="feature/adaptive-practice" />;
-const ExerciseResultScreen = () => <PlaceholderScreen title="Resultado" branch="feature/adaptive-practice" />;
 
 // Renders the custom bottom bar of the design system.
 const renderTabBar = (props: React.ComponentProps<typeof BottomTabBar>) => <BottomTabBar {...props} />;
@@ -37,10 +43,10 @@ const renderTabBar = (props: React.ComponentProps<typeof BottomTabBar>) => <Bott
 function MainTabs() {
   return (
     <Tab.Navigator screenOptions={{ headerShown: false }} tabBar={renderTabBar}>
-      <Tab.Screen name="Courses" component={CoursesTab} />
-      <Tab.Screen name="Progress" component={ProgressTab} />
-      <Tab.Screen name="History" component={HistoryTab} />
-      <Tab.Screen name="Profile" component={ProfileTab} />
+      <Tab.Screen name="Courses" component={MyCoursesScreen} />
+      <Tab.Screen name="Progress" component={ProgressScreen} />
+      <Tab.Screen name="History" component={HistoryScreen} />
+      <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>
   );
 }
@@ -49,19 +55,46 @@ function MainTabs() {
  * Renders the root stack: the tabs and the screens pushed over them.
  *
  * @remarks
- * The app opens on the tabs; the sign-in guard belongs to feature/auth-profile.
+ * The app displays authentication screens when there is no active session.
+ * Authenticated students can access the main tabs and feature screens.
  */
 export function RootNavigator() {
-  return (
-    <Stack.Navigator initialRouteName="Tabs" screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="SignIn" component={SignInScreen} />
-      <Stack.Screen name="SignUp" component={SignUpScreen} />
-      <Stack.Screen name="Tabs" component={MainTabs} />
-      <Stack.Screen name="CourseSubtopics" component={CourseSubtopicsScreen} />
-      <Stack.Screen name="Invitations" component={InvitationsScreen} />
-      <Stack.Screen name="EnrollmentConfirmed" component={EnrollmentConfirmedScreen} />
-      <Stack.Screen name="Exercise" component={ExerciseScreen} />
-      <Stack.Screen name="ExerciseResult" component={ExerciseResultScreen} />
-    </Stack.Navigator>
-  );
+    const { isAuthenticated, isLoading, session } = useAuth();
+
+    if (isLoading) {
+        return (
+            <View style={styles.loadingContainer}>
+                <LoadingState />
+            </View>
+        );
+    }
+
+    return (
+        <Stack.Navigator key={session?.accessToken ?? 'signed-out'} screenOptions={{ headerShown: false }}>
+            {isAuthenticated ? (
+                <>
+                    <Stack.Screen name="Tabs" component={MainTabs} />
+                    <Stack.Screen name="CourseSubtopics" component={CourseSubtopicsScreen} />
+                    <Stack.Screen name="Invitations" component={InvitationsScreen} />
+                    <Stack.Screen name="EnrollmentConfirmed" component={EnrollmentConfirmedScreen} />
+                    <Stack.Screen name="Exercise" component={ExerciseScreen} />
+                    <Stack.Screen name="ExerciseResult" component={ExerciseResultScreen} />
+                </>
+            ) : (
+                <>
+                    <Stack.Screen name="SignIn" component={SignInScreen} />
+                    <Stack.Screen name="SignUp" component={SignUpScreen} />
+                </>
+            )}
+        </Stack.Navigator>
+    );
 }
+
+const styles = StyleSheet.create({
+    loadingContainer: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: colors.surfaceBackground,
+    },
+});

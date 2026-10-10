@@ -51,6 +51,12 @@ export interface IconBoxProps {
    * @defaultValue `'lg'`
    */
   size?: IconBoxSize;
+  /**
+   * Container intensity; soft uses the shared subtle surface.
+   *
+   * @defaultValue `'filled'`
+   */
+  variant?: 'filled' | 'soft';
   /** Layout adjustments from the parent. */
   style?: StyleProp<ViewStyle>;
 }
@@ -63,14 +69,14 @@ export interface IconBoxProps {
  * <IconBox icon="account_tree" tone="warning" />
  * ```
  */
-export function IconBox({ icon, tone = 'primary', size = 'lg', style }: IconBoxProps) {
+export function IconBox({ icon, tone = 'primary', size = 'lg', variant = 'filled', style }: IconBoxProps) {
   const preset = SIZE[size];
   const palette = TONE[tone];
   return (
     <View
       style={[
         styles.box,
-        { width: preset.box, height: preset.box, borderRadius: preset.radius, backgroundColor: palette.background },
+        { width: preset.box, height: preset.box, borderRadius: preset.radius, backgroundColor: variant === 'soft' ? colors.primaryContainerSoft : palette.background },
         style,
       ]}
     >

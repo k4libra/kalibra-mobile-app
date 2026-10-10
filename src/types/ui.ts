@@ -83,6 +83,7 @@ export type IconName =
   | 'group'
   | 'help'
   | 'history'
+  | 'hub'
   | 'hourglass_empty'
   | 'how_to_reg'
   | 'info'
@@ -126,4 +127,20 @@ export type IconName =
   | 'upload_file'
   | 'verified'
   | 'warning'
-  | 'workspace_premium';
+  | 'workspace_premium'
+  | 'visibility'
+  | 'alternate_email'
+  | 'badge'
+  | 'calculate'
+  | 'account_balance'
+  | 'dark_mode'
+  | 'alarm'
+  | 'power_settings_new'
+  | 'menu_book'
+  | 'fiber_manual_record';
+
+/** Height presets for text inputs. */
+export type TextFieldVariant = 'compact' | 'regular';
+
+/** Message density presets for callouts. */
+export type CalloutVariant = 'card' | 'inline';

@@ -48,6 +48,19 @@ npx tsc --noEmit
 npm test
 ```
 
+## Acceso de demostración
+
+La app inicia en **Iniciar sesión**. Credenciales exclusivamente locales del mock:
+
+| Campo | Valor |
+| --- | --- |
+| Correo | `v.morales@upc.edu.pe` |
+| Contraseña | `Kalibra2025!` |
+
+El demo conserva sus cursos y estadísticas (77 ejercicios, 71% de dominio, 3 cursos activos). Un registro válido con otro correo institucional (`.edu` o `.edu.pe`) entra a Cursos sin inscripciones y con estadísticas en cero. La contraseña requiere al menos ocho caracteres, letras y números.
+
+Las cuentas y preferencias se mantienen **solo en memoria** y se reinician al cerrar el runtime. «Recordar en este dispositivo» no persiste credenciales. Al cerrar sesión se elimina el stack autenticado; Android back no puede recuperar los tabs.
+
 Para ver los estados vacíos (sin cursos) cambia `MOCK_SCENARIO` a `'empty'` en `src/mocks/scenario.ts`.
 
 ## Arquitectura por capas
@@ -81,3 +94,9 @@ Toda rama nace de `develop`.
 | `feature/progress-history` | compañero |
 
 Las pantallas de otras ramas muestran `PlaceholderScreen` hasta que se integran.
+
+## Reglas por capa
+
+[Componentes](src/components/README.md) · [Pantallas](src/screens/README.md) · [Hooks](src/hooks/README.md) · [Servicios](src/services/README.md) · [Contexto](src/context/README.md) · [Tipos](src/types/README.md) · [Utilidades](src/utils/README.md) · [Mocks](src/mocks/README.md) · [Navegación](src/navigation/README.md).
+
+La ilustración `study-preview.png` se extrajo del frame de inicio de sesión proporcionado en `_figma/mobile/02_inicio_sesion.png`.
