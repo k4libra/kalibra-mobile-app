@@ -27,7 +27,7 @@ export function ExerciseScreen({ navigation, route }: RootScreenProps<'Exercise'
   const handleSubmit = async () => {
     if (!exercise || !selectedId) return;
     const result = await submit(exercise.id, selectedId);
-    if (result) navigation.navigate('ExerciseResult', { attemptId: result.attemptId });
+    if (result) navigation.replace('ExerciseResult', { attemptId: result.attemptId });
   };
 
   return (
@@ -69,20 +69,24 @@ export function ExerciseScreen({ navigation, route }: RootScreenProps<'Exercise'
                     / {exercise.sessionSize}
                   </Text>
                 </Text>
-                <Icon name="bolt" size="sm" color={colors.primaryStrong} />
-                <Text variant="bodyMBold" color="brand">
-                  +{exercise.sessionPoints} pts
-                </Text>
+                {exercise.sessionPoints !== null && <>
+                  <Icon name="bolt" size="sm" color={colors.primaryStrong} />
+                  <Text variant="bodyMBold" color="brand">
+                    +{exercise.sessionPoints} pts
+                  </Text>
+                </>}
               </View>
               <SessionSegments total={exercise.sessionSize} reached={exercise.position} />
             </Card>}
             {(exercise.difficultyLabel || exercise.elapsed) && <View style={styles.row}>
-              <Chip label={exercise.difficultyLabel} icon="tune" />
-              <View style={styles.flex} />
-              <Icon name="timer" size="xs" color={colors.contentSecondary} />
-              <Text variant="labelS" color="secondary">
-                {exercise.elapsed}
-              </Text>
+              {exercise.difficultyLabel && <Chip label={exercise.difficultyLabel} icon="tune" />}
+              {exercise.elapsed && <>
+                <View style={styles.flex} />
+                <Icon name="timer" size="xs" color={colors.contentSecondary} />
+                <Text variant="labelS" color="secondary">
+                  {exercise.elapsed}
+                </Text>
+              </>}
             </View>}
           </View>
 
@@ -93,8 +97,9 @@ export function ExerciseScreen({ navigation, route }: RootScreenProps<'Exercise'
                 {exercise.area}
               </Text>
             </View>
-            <RichText segments={exercise.prompt} />
-            {exercise.code && <CodeBlock snippet={exercise.code} />}
+            {exercise.statementSegments.map((segment, index) => segment.type === 'code'
+              ? <CodeBlock key={index} snippet={segment.snippet} />
+              : <RichText key={index} segments={[{ text: segment.text }]} />)}
             {exercise.question.length > 0 && <View style={styles.question}>
               <Icon name="help" size="lg" color={colors.primaryStrong} />
               <View style={styles.flex}>

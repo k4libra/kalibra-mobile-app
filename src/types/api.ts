@@ -122,6 +122,8 @@ export interface ExerciseDto {
   subtopicId: string;
   /** Full exercise statement. */
   statement: string;
+  /** Adaptive difficulty; older servers may omit it. */
+  difficulty?: 'EASY' | 'MEDIUM' | 'HARD';
   /** Answer values in key order. */
   options: string[];
 }

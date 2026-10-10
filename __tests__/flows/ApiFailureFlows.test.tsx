@@ -55,7 +55,6 @@ test('refreshes the retained history tab after submitting an exercise', async ()
   await press(tree.root, 'Enviar respuesta');
   await press(tree.root, 'Volver');
   await press(tree.root, 'Volver');
-  await press(tree.root, 'Volver');
   await press(tree.root, 'Historial');
   expect(hasText(tree.root, '75% aciertos')).toBe(true);
 });

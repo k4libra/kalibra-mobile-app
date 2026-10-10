@@ -65,6 +65,28 @@ test('sorts curriculum without mutating the server DTO', () => {
   expect(mapSubtopics(course, TEST_PROGRESS[0])[0].id).toBe('sub-1');
   expect(course.subtopics[0].id).toBe('sub-4');
 });
+test('labels practiced subtopics with solved counts and leaves unpracticed ones explicit', () => {
+  const progress = { ...TEST_PROGRESS[0], subtopics: TEST_PROGRESS[0].subtopics.map((item, index) => ({
+    ...item, solvedCount: index === 2 ? 2 : item.solvedCount, mastery: index === 2 ? 28 : item.mastery,
+  })) };
+  const subtopics = mapSubtopics(TEST_COURSES[0], progress);
+  expect(subtopics.map(item => item.note)).toEqual(['1 resuelto', '1 resuelto', '2 resueltos', 'Sin práctica']);
+  expect(subtopics[2].mastery).toBe(28);
+  expect(mapSubtopics(TEST_COURSES[0], { ...progress, hasActivity: false }).every(item => item.note === 'Sin práctica')).toBe(true);
+});
+test('uses level copy when mastery is known but no solved count is available', () => {
+  const progress = { ...TEST_PROGRESS[0], subtopics: TEST_PROGRESS[0].subtopics.map(item => ({ ...item, solvedCount: 0 })) };
+  expect(mapSubtopics(TEST_COURSES[0], progress)[2].note).toBe('Dominio Bajo');
+});
+test.each([['EASY', 1], ['MEDIUM', 2], ['HARD', 3]] as const)('maps %s adaptive difficulty to level %s', (difficulty, level) => {
+  const exercise = mapExercise({ exerciseId: 'e', subtopicId: 'sub-1', statement: 'Pregunta', options: [], difficulty }, TEST_COURSES[0]);
+  expect(exercise.difficultyLabel).toBe(`Dificultad adaptativa: Nivel ${level}`);
+});
+test('maps embedded code into ordered display blocks and hides missing difficulty', () => {
+  const exercise = mapExercise({ exerciseId: 'e', subtopicId: 'sub-1', statement: 'Analiza:\n```java\nreturn 1;\n```\n¿Qué retorna?', options: [] }, TEST_COURSES[0]);
+  expect(exercise.statementSegments.map(item => item.type)).toEqual(['prose', 'code', 'prose']);
+  expect(exercise.difficultyLabel).toBe('');
+});
 test('preserves the statement and keys without adding a hint, code or session scores', () => {
   const exercise = mapExercise(
     {

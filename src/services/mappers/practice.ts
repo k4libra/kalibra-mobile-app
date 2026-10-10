@@ -7,6 +7,9 @@
 
 import type { AttemptDto, CourseDto, ExerciseDto } from '@/types/api';
 import type { PracticeExercise, PracticeResult } from '@/types/exercise';
+import { splitStatement } from '@/utils/statement';
+
+const DIFFICULTY_LEVEL = { EASY: 1, MEDIUM: 2, HARD: 3 };
 /**
  * Maps statement and options using the API's A-D keys, without a fabricated session.
  *
@@ -31,12 +34,15 @@ export function mapExercise(
       course.subtopics.find(item => item.id === dto.subtopicId)?.name ?? '',
     area: course.name,
     levelLabel: '',
-    difficultyLabel: '',
+    difficultyLabel: dto.difficulty && DIFFICULTY_LEVEL[dto.difficulty]
+      ? `Dificultad adaptativa: Nivel ${DIFFICULTY_LEVEL[dto.difficulty]}`
+      : '',
     position: null,
     sessionSize: null,
     sessionPoints: null,
     elapsed: '',
     prompt: [{ text: dto.statement }],
+    statementSegments: splitStatement(dto.statement),
     question: [],
     code: null,
     hint: '',
