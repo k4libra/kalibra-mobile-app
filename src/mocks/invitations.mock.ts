@@ -7,7 +7,8 @@
 
 import type { InvitationsContract } from '@/services/invitations.contract';
 import type { StudentInvitation } from '@/types/invitation';
-import { respond } from './scenario';
+import { respond } from '@/mocks/scenario';
+import { hasDemoSession } from '@/mocks/session.mock';
 
 /**
  * Sample invitations of the student.
@@ -19,7 +20,7 @@ export const INVITATIONS: StudentInvitation[] = [
 
 // Finds an invitation or rejects like the backend would.
 function find(invitationId: string): Promise<StudentInvitation> {
-  const invitation = INVITATIONS.find(item => item.id === invitationId);
+  const invitation = hasDemoSession() ? INVITATIONS.find(item => item.id === invitationId) : undefined;
   return invitation ? respond(invitation) : Promise.reject(new Error(`Invitation ${invitationId} not found`));
 }
 
@@ -27,7 +28,7 @@ function find(invitationId: string): Promise<StudentInvitation> {
  * Simulated implementation of {@link InvitationsContract}.
  */
 export const invitationsMock: InvitationsContract = {
-  listInvitations: () => respond(INVITATIONS),
+  listInvitations: () => respond(hasDemoSession() ? INVITATIONS : []),
   getInvitation: find,
   acceptInvitation: find,
   rejectInvitation: invitationId => find(invitationId).then(() => undefined),
