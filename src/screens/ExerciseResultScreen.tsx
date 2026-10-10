@@ -34,18 +34,18 @@ export function ExerciseResultScreen({ navigation, route }: RootScreenProps<'Exe
       footer={result && <Button label="Continuar practicando" icon="arrow_forward" onPress={continuePractice} />}
     >
       {error && <ErrorState message={error} />}
-      {isLoading || !result ? (
+      {isLoading ? (
         <LoadingState />
-      ) : (
+      ) : result ? (
         <>
           <View style={styles.progress}>
             <View style={styles.row}>
               <Chip label={result.subtopicName} icon="account_tree" tone="neutral" />
-              <Text variant="bodyMBold" color="brand">
+              {result.position !== null && result.sessionSize !== null && <Text variant="bodyMBold" color="brand">
                 Ejercicio {result.position}/{result.sessionSize}
-              </Text>
+              </Text>}
             </View>
-            <SessionSegments total={result.sessionSize} outcomes={result.sessionOutcomes} />
+            {result.sessionSize !== null && <SessionSegments total={result.sessionSize} outcomes={result.sessionOutcomes} />}
           </View>
           <HeroBanner
             tone={result.isCorrect ? 'success' : 'danger'}
@@ -56,12 +56,14 @@ export function ExerciseResultScreen({ navigation, route }: RootScreenProps<'Exe
             pillLabel={
               result.masteryDelta > 0
                 ? `Dominio en ${result.subtopicName} ↑ ${result.masteryDelta} pts`
-                : `Dominio en ${result.subtopicName} sin cambios`
+                : result.masteryDelta < 0
+                  ? `Dominio en ${result.subtopicName} ↓ ${Math.abs(result.masteryDelta)} pts`
+                  : `Dominio en ${result.subtopicName} sin cambios`
             }
           />
           <ExplanationCard result={result} />
         </>
-      )}
+      ) : null}
     </ScreenContainer>
   );
 }

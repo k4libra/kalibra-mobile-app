@@ -29,7 +29,7 @@ export function HistoryScreen() {
   const { history, filter, setFilter, entries, isLoading, error } = usePracticeHistory();
   const { selectedCourseId, progress } = useProgress();
   const [isEmptyPreview, setIsEmptyPreview] = useState(false);
-  const hasHistory = Boolean(history && history.entries.length > 0) && !isEmptyPreview;
+  const hasHistory = Boolean(history && history.summary.total > 0) && !isEmptyPreview;
 
   const startPracticing = () => {
     const first = progress?.subtopics[0];
@@ -58,7 +58,7 @@ export function HistoryScreen() {
         <EmptyState
           icon="hub"
           title="Todavía no tienes historial"
-          description="Aquí verás cada ejercicio que resuelvas, con su resultado y el tiempo que te tomó."
+          description="Aquí verás cada ejercicio que resuelvas, con su resultado y la explicación."
           actionLabel="Resolver mi primer ejercicio"
           onAction={startPracticing}
         />
@@ -89,7 +89,7 @@ export function HistoryScreen() {
         </>
       )}
 
-      {history && history.entries.length > 0 && (
+      {history && history.summary.total > 0 && (
         <View style={styles.preview}>
           <Text variant="bodyM" color="secondary">
             Simulación de estados

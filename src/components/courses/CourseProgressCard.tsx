@@ -51,12 +51,12 @@ export function CourseProgressCard({ course }: CourseProgressCardProps) {
             {course.solvedExerciseCount} ejercicios resueltos
           </Text>
         </View>
-        <View style={styles.meta}>
+        {course.estimatedTimeLeft ? <View style={styles.meta}>
           <Icon name="timelapse" size="xs" color={colors.tertiaryStrong} />
           <Text variant="labelS" color="secondary">
             {course.estimatedTimeLeft} estimadas restantes
           </Text>
-        </View>
+        </View> : null}
       </View>
     </Card>
   );

@@ -37,7 +37,7 @@ export function InvitationCard({ invitation, onAccept, onReject }: InvitationCar
             {invitation.courseName}
           </Text>
           <Text variant="bodyM" color="secondary">
-            {invitation.teacherName} · {invitation.courseCode}
+            {[invitation.teacherName, invitation.courseCode].filter(Boolean).join(' · ')}
           </Text>
         </View>
       </View>

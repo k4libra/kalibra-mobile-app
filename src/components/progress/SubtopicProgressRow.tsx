@@ -47,7 +47,7 @@ export function SubtopicProgressRow({ subtopic }: SubtopicProgressRowProps) {
           </Text>
           <Text variant="labelM" color={level.color}>
             {level.label}
-            {subtopic.attemptCount > 0 ? ` • ${subtopic.correctCount}/${subtopic.attemptCount} correctos` : ''}
+            {subtopic.attemptCount > 0 ? subtopic.correctCount === null ? ` • ${subtopic.attemptCount} resueltos` : ` • ${subtopic.correctCount}/${subtopic.attemptCount} correctos` : ''}
           </Text>
         </View>
         <Text variant="headlineM">{subtopic.mastery === null ? '—' : `${subtopic.mastery}%`}</Text>

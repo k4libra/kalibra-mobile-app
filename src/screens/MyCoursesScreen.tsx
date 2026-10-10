@@ -39,7 +39,7 @@ export function MyCoursesScreen() {
           <Text variant="headlineL" isHeading>
             Hola, {student?.firstName ?? ''}
           </Text>
-          {student && <Chip label={`Ciclo ${student.term}`} />}
+          {student?.term && <Chip label={`Ciclo ${student.term}`} />}
         </View>
         <Text color="secondary">{hasCourses || isLoading ? 'Tus cursos activos este ciclo' : 'Aún no tienes cursos este ciclo'}</Text>
       </View>

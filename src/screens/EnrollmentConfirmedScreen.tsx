@@ -25,8 +25,9 @@ export function EnrollmentConfirmedScreen({ navigation, route }: RootScreenProps
     <ScreenContainer
       header={<AppHeader title="Matrícula" onBack={navigation.goBack} avatar={student?.avatar} onProfile={() => navigation.navigate('Tabs', { screen: 'Profile' })} />}
     >
-      {error && <ErrorState message={error} />}
-      {isLoading || !invitation ? (
+      {error ? (
+        <ErrorState message={error} />
+      ) : isLoading || !invitation ? (
         <LoadingState />
       ) : (
         <>
@@ -36,7 +37,7 @@ export function EnrollmentConfirmedScreen({ navigation, route }: RootScreenProps
             title="¡Ya estás inscrito!"
             message={`Te uniste a ${invitation.courseName}.`}
             pillIcon="workspace_premium"
-            pillLabel={`Matrícula activa · Ciclo ${invitation.term}`}
+            pillLabel={invitation.term ? `Matrícula activa · Ciclo ${invitation.term}` : 'Matrícula activa'}
           />
           <Card style={styles.card}>
             <View style={styles.row}>

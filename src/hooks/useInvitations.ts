@@ -22,7 +22,7 @@ import { useResource } from './useResource';
  * ```
  */
 export function useInvitations() {
-  const { data, isLoading, error, refetch } = useResource(invitationsService.listInvitations, 'invitations');
+  const { data, isLoading, error, refetch } = useResource(invitationsService.listInvitations, 'invitations', true);
   const [rejectedIds, setRejectedIds] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -45,7 +45,7 @@ export function useInvitations() {
   const reject = useCallback(
     async (invitationId: string) => {
       const done = await run(() => invitationsService.rejectInvitation(invitationId).then(() => true));
-      // The simulated service keeps its data; hide the answered invitation until the real API removes it.
+      // Hide the answered invitation immediately while the local list awaits its next read.
       if (done) setRejectedIds(ids => [...ids, invitationId]);
       return Boolean(done);
     },

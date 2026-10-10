@@ -29,8 +29,8 @@ const FILTERS: Record<HistoryFilter, (entry: HistoryEntry) => boolean> = {
  * ```
  */
 export function usePracticeHistory() {
-  const { data, isLoading, error } = useResource(progressService.getHistory, 'practice-history');
   const [filter, setFilter] = useState<HistoryFilter>('all');
+  const { data, isLoading, error } = useResource(() => progressService.getHistory(filter), `practice-history-${filter}`, true);
   return {
     history: data,
     filter,

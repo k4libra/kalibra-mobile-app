@@ -20,7 +20,7 @@ export function SignInScreen({ navigation }: Props) {
   const form = useAuthForm('signIn');
   return <AuthLayout>
     <AuthHeader title="¡Hola de nuevo!" subtitle="Ingresa para continuar tus prácticas adaptativas de cálculo y algoritmos." />
-    {form.notice && <Callout title="Credenciales incorrectas" description={form.notice} icon="error" tone="danger" onDismiss={form.dismissNotice} />}
+    {form.notice && <Callout title={form.error?.code === 'INVALID_CREDENTIALS' ? 'Credenciales incorrectas' : 'No se pudo iniciar sesión'} description={form.notice} icon="error" tone="danger" onDismiss={form.dismissNotice} />}
     {form.preview && <StudyPreview preview={form.preview} />}
     <View style={styles.fields}>
       <TextField label="Correo universitario" icon="school" value={form.email} onChangeText={form.setEmail} placeholder="tu.correo@universidad.edu" keyboardType="email-address" autoComplete="email"

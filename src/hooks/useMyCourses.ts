@@ -22,6 +22,7 @@ export function useMyCourses() {
   const { data, isLoading, error, refetch } = useResource(
     () => Promise.all([coursesService.getStudent(), coursesService.listCourses()]),
     'my-courses',
+    true,
   );
   return { student: data?.[0] ?? null, courses: data?.[1] ?? [], isLoading, error, refetch };
 }

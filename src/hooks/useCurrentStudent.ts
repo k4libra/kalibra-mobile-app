@@ -19,6 +19,6 @@ import { useResource } from './useResource';
  * ```
  */
 export function useCurrentStudent() {
-  const { data, isLoading, error } = useResource(coursesService.getStudent, 'student');
+  const { data, isLoading, error } = useResource(coursesService.getStudent, 'student', true);
   return { student: data, isLoading, error };
 }

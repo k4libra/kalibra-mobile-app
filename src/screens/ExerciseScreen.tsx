@@ -9,7 +9,7 @@ import React, { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { AppHeader, ScreenContainer } from '@/components/layout';
 import { AnswerOptionCard, CodeBlock, HintToggle, RichText, SessionSegments } from '@/components/practice';
-import { Button, Card, Chip, ErrorState, Icon, LoadingState, Text } from '@/components/ui';
+import { Button, Card, Chip, EmptyState, ErrorState, Icon, LoadingState, Text } from '@/components/ui';
 import { useCurrentStudent } from '@/hooks/useCurrentStudent';
 import { useExercise } from '@/hooks/usePractice';
 import type { RootScreenProps } from '@/navigation/types';
@@ -20,7 +20,7 @@ import { colors, radius, spacing } from '@/theme/tokens';
  */
 export function ExerciseScreen({ navigation, route }: RootScreenProps<'Exercise'>) {
   const { courseId, subtopicId } = route.params;
-  const { exercise, submit, isLoading, isSubmitting, error } = useExercise(courseId, subtopicId);
+  const { exercise, submit, isLoading, isSubmitting, isEmpty, error } = useExercise(courseId, subtopicId);
   const { student } = useCurrentStudent();
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
@@ -46,20 +46,22 @@ export function ExerciseScreen({ navigation, route }: RootScreenProps<'Exercise'
         )
       }
     >
-      {error && <ErrorState message={error} />}
-      {isLoading || !exercise ? (
+      {error && (isEmpty
+        ? <EmptyState icon="menu_book" title={error} description="Vuelve a intentarlo cuando tu docente haya habilitado ejercicios." />
+        : <ErrorState message={error} />)}
+      {isLoading ? (
         <LoadingState />
-      ) : (
+      ) : exercise ? (
         <>
           <View style={styles.meta}>
             <View style={styles.row}>
               <Icon name="psychology" size="sm" color={colors.primaryStrong} />
               <Text variant="bodyMBold" color="secondary" style={styles.flex}>
-                {exercise.subtopicName.toUpperCase()} • {exercise.levelLabel}
+                {[exercise.subtopicName.toUpperCase(), exercise.levelLabel].filter(Boolean).join(' • ')}
               </Text>
               <Chip label="En curso" tone="neutral" icon="pause" />
             </View>
-            <Card style={styles.progress}>
+            {exercise.position !== null && exercise.sessionSize !== null && <Card style={styles.progress}>
               <View style={styles.row}>
                 <Text variant="title" style={styles.flex}>
                   Ejercicio {exercise.position}{' '}
@@ -73,15 +75,15 @@ export function ExerciseScreen({ navigation, route }: RootScreenProps<'Exercise'
                 </Text>
               </View>
               <SessionSegments total={exercise.sessionSize} reached={exercise.position} />
-            </Card>
-            <View style={styles.row}>
+            </Card>}
+            {(exercise.difficultyLabel || exercise.elapsed) && <View style={styles.row}>
               <Chip label={exercise.difficultyLabel} icon="tune" />
               <View style={styles.flex} />
               <Icon name="timer" size="xs" color={colors.contentSecondary} />
               <Text variant="labelS" color="secondary">
                 {exercise.elapsed}
               </Text>
-            </View>
+            </View>}
           </View>
 
           <Card style={styles.problem}>
@@ -93,12 +95,12 @@ export function ExerciseScreen({ navigation, route }: RootScreenProps<'Exercise'
             </View>
             <RichText segments={exercise.prompt} />
             {exercise.code && <CodeBlock snippet={exercise.code} />}
-            <View style={styles.question}>
+            {exercise.question.length > 0 && <View style={styles.question}>
               <Icon name="help" size="lg" color={colors.primaryStrong} />
               <View style={styles.flex}>
                 <RichText segments={exercise.question} />
               </View>
-            </View>
+            </View>}
           </Card>
 
           <View accessibilityRole="radiogroup" style={styles.options}>
@@ -106,9 +108,9 @@ export function ExerciseScreen({ navigation, route }: RootScreenProps<'Exercise'
               <AnswerOptionCard key={option.id} option={option} isSelected={option.id === selectedId} onSelect={setSelectedId} />
             ))}
           </View>
-          <HintToggle hint={exercise.hint} />
+          {exercise.hint ? <HintToggle hint={exercise.hint} /> : null}
         </>
-      )}
+      ) : null}
     </ScreenContainer>
   );
 }
