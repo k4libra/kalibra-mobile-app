@@ -1,61 +1,56 @@
-
-import type {
-    AuthSession,
-    ProfilePreferences,
-    SignInCredentials,
-    SignOutResult,
-    SignUpData,
-    StudentProfile,
-} from '@/types/auth';
-
 /**
- * Contract for authentication operations.
+ * Authentication and profile service boundary.
  *
- * The implementation can use mock data during
- * development and a real API in the future.
+ * @author MRamirez202210582
+ * @packageDocumentation
  */
+
+import type { AuthSession, ProfilePreferences, SignInCredentials, SignOutResult, SignUpData, StudentProfile, StudyPreviewData } from '@/types/auth';
+/** Contract implemented by simulated authentication endpoints. */
 export interface AuthServiceContract {
-    /**
-     * Registers a new student account.
-     *
-     * Throws an error if:
-     * - A required field is missing.
-     * - The institutional email is invalid.
-     * - The email is already registered.
-     * - The password does not meet requirements.
-     */
-    signUp(data: SignUpData): Promise<AuthSession>;
-
-    /**
-     * Signs in with institutional credentials.
-     *
-     * Throws an error when credentials are invalid.
-     */
-    signIn(
-        credentials: SignInCredentials,
-    ): Promise<AuthSession>;
-
-    /**
-     * Signs out the current user.
-     */
-    signOut(): Promise<SignOutResult>;
-
-    /**
-     * Returns the current session, if available.
-     */
-    getCurrentSession(): Promise<AuthSession | null>;
-
-    /**
-     * Returns the authenticated student's profile.
-     */
-    getProfile(): Promise<StudentProfile>;
-
-    /**
-     * Updates learning preferences.
-     *
-     * Supports changing dark mode and daily reminders.
-     */
-    updatePreferences(
-        preferences: Partial<ProfilePreferences>,
-    ): Promise<ProfilePreferences>;
+  /**
+   * Loads the public study preview shown at account access.
+   * @returns An illustration and generic study recommendation.
+   * @throws Error when the preview cannot be loaded.
+   */
+  getStudyPreview(): Promise<StudyPreviewData>;
+  /**
+   * Registers and signs in a new student.
+   * @param data - Validated name, institutional email and password.
+   * @returns A session for an account with no academic activity.
+   * @throws Error with a domain code when validation fails or the email already exists.
+   */
+  signUp(data: SignUpData): Promise<AuthSession>;
+  /**
+   * Authenticates an existing account.
+   * @param credentials - Institutional email, password and persistence preference.
+   * @returns The authenticated session.
+   * @throws Error with a domain code when credentials are invalid or the request is obsolete.
+   */
+  signIn(credentials: SignInCredentials): Promise<AuthSession>;
+  /**
+   * Removes the current mock session.
+   * @returns A successful logout result.
+   * @throws Error when the endpoint is unavailable.
+   */
+  signOut(): Promise<SignOutResult>;
+  /**
+   * Restores the current in-memory session.
+   * @returns The session or null when signed out.
+   * @throws Error when restoration is unavailable.
+   */
+  getCurrentSession(): Promise<AuthSession | null>;
+  /**
+   * Loads identity, academic totals and preferences.
+   * @returns The current account profile.
+   * @throws Error with UNAUTHORIZED when there is no session.
+   */
+  getProfile(): Promise<StudentProfile>;
+  /**
+   * Patches the preferences of the request's account.
+   * @param preferences - Learning settings to change.
+   * @returns The complete updated preferences.
+   * @throws Error with UNAUTHORIZED when the session ends before completion.
+   */
+  updatePreferences(preferences: Partial<ProfilePreferences>): Promise<ProfilePreferences>;
 }

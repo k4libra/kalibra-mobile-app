@@ -1,114 +1,109 @@
-
 /**
- * Domain types for authentication and student profile.
+ * Domain contracts for authentication and student profiles.
  *
- * These contracts support mock services and future backend integration.
- *
+ * @author MRamirez202210582
  * @packageDocumentation
  */
 
-/**
- * Authenticated user roles.
- */
+import type { ImageSourcePropType } from 'react-native';
+
+/** Account role supported by the student app. */
 export type AuthRole = 'student';
-
-/**
- * Student account information.
- * Passwords must never be included in this model.
- */
+/** Account identity without stored credentials. */
 export interface AuthUser {
-    id: string;
-    fullName: string;
-    email: string;
-    role: AuthRole;
-    faculty: string;
-    semester: string;
+  /** Stable account identifier. */
+  id: string;
+  /** Name shown on the profile. */
+  fullName: string;
+  /** Institutional email, normalized to lowercase. */
+  email: string;
+  /** Access role of the account. */
+  role: AuthRole;
+  /** Faculty label; empty before enrollment. */
+  faculty: string;
+  /** Semester label; empty before enrollment. */
+  semester: string;
 }
-
-/**
- * Credentials required to sign in.
- */
+/** Credentials submitted to sign in. */
 export interface SignInCredentials {
-    email: string;
-    password: string;
-    rememberDevice: boolean;
+  /** Institutional email. */
+  email: string;
+  /** Password provided by the user. */
+  password: string;
+  /** Future persistence preference; the mock remains in memory. */
+  rememberDevice: boolean;
 }
-
-/**
- * Data required to register a new student.
- */
+/** Data submitted to register a student. */
 export interface SignUpData {
-    fullName: string;
-    email: string;
-    password: string;
+  /** Full display name. */
+  fullName: string;
+  /** Institutional email. */
+  email: string;
+  /** Password with at least eight characters, letters and numbers. */
+  password: string;
 }
-
-/**
- * Session returned after successful authentication.
- */
+/** Authenticated account and its mock session identifier. */
 export interface AuthSession {
-    user: AuthUser;
-    accessToken: string;
+  /** Signed-in account. */
+  user: AuthUser;
+  /** Local placeholder token; never a real credential. */
+  accessToken: string;
 }
-
-/**
- * Student profile statistics.
- */
+/** Aggregate academic statistics of the current account. */
 export interface ProfileStats {
-    solvedExerciseCount: number;
-    averageMastery: number | null;
-    activeCourseCount: number;
+  /** Total completed exercises. */
+  solvedExerciseCount: number;
+  /** Average mastery percentage; null when no activity exists. */
+  averageMastery: number | null;
+  /** Number of active courses. */
+  activeCourseCount: number;
 }
-
-/**
- * Student learning preferences.
- */
+/** Account-scoped learning preferences. */
 export interface ProfilePreferences {
-    darkMode: boolean;
-    dailyReminders: boolean;
+  /** Whether late study mode is enabled; does not change the reference palette. */
+  darkMode: boolean;
+  /** Whether daily reminders are enabled. */
+  dailyReminders: boolean;
 }
-
-/**
- * Complete profile information.
- */
+/** Complete student profile returned by the service. */
 export interface StudentProfile {
-    user: AuthUser;
-    stats: ProfileStats;
-    preferences: ProfilePreferences;
+  /** Account identity. */
+  user: AuthUser;
+  /** Academic totals. */
+  stats: ProfileStats;
+  /** Preferences of this account. */
+  preferences: ProfilePreferences;
 }
-
-/**
- * Supported authentication error codes.
- */
-export type AuthErrorCode =
-    | 'INVALID_EMAIL'
-    | 'EMAIL_ALREADY_REGISTERED'
-    | 'INVALID_CREDENTIALS'
-    | 'INVALID_PASSWORD'
-    | 'REQUIRED_FIELD'
-    | 'UNAUTHORIZED'
-    | 'UNKNOWN_ERROR';
-
-/**
- * Error structure for authentication operations.
- */
+/** Domain failure codes used by authentication actions. */
+export type AuthErrorCode = 'INVALID_EMAIL' | 'EMAIL_ALREADY_REGISTERED' | 'INVALID_CREDENTIALS' | 'INVALID_PASSWORD' | 'REQUIRED_FIELD' | 'UNAUTHORIZED' | 'UNKNOWN_ERROR';
+/** Normalized authentication failure exposed to the UI. */
 export interface AuthError {
-    code: AuthErrorCode;
-    message: string;
+  /** Machine-readable reason. */
+  code: AuthErrorCode;
+  /** Spanish message shown to the user. */
+  message: string;
 }
-
-/**
- * Authentication state used by the application.
- */
-export interface AuthState {
-    session: AuthSession | null;
-    isLoading: boolean;
-    error: AuthError | null;
-}
-
-/**
- * Result returned when a user signs out.
- */
+/** Result of ending a mock session. */
 export interface SignOutResult {
-    success: boolean;
+  /** Whether the session was removed. */
+  success: boolean;
+}
+/** Inline registration feedback keyed by field. */
+export interface AuthFieldErrors {
+  /** Name validation message. */
+  fullName?: string;
+  /** Email validation message. */
+  email?: string;
+  /** Password validation message. */
+  password?: string;
+}
+
+/** Public study preview shown before authentication. */
+export interface StudyPreviewData {
+  /** Reference illustration bundled locally. */
+  image: ImageSourcePropType;
+  /** Recommendation description from mock study data. */
+  description: string;
+  /** Subjects offered by the personalized study plan. */
+  planDescription: string;
 }

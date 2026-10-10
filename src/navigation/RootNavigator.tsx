@@ -7,10 +7,12 @@
  */
 
 import React from 'react';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
+import { LoadingState } from '@/components/ui';
+import { colors } from '@/theme/tokens';
 import { BottomTabBar } from '@/components/layout';
 import { CourseSubtopicsScreen } from '@/screens/CourseSubtopicsScreen';
 import { EnrollmentConfirmedScreen } from '@/screens/EnrollmentConfirmedScreen';
@@ -59,18 +61,18 @@ function MainTabs() {
  * Authenticated students can access the main tabs and feature screens.
  */
 export function RootNavigator() {
-    const { isAuthenticated, isLoading } = useAuth();
+    const { isAuthenticated, isLoading, session } = useAuth();
 
     if (isLoading) {
         return (
             <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="#6C5CE7" />
+                <LoadingState />
             </View>
         );
     }
 
     return (
-        <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Navigator key={session?.accessToken ?? 'signed-out'} screenOptions={{ headerShown: false }}>
             {isAuthenticated ? (
                 <>
                     <Stack.Screen name="Tabs" component={MainTabs} />
@@ -95,6 +97,6 @@ const styles = StyleSheet.create({
         flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: '#FAF8FF',
+        backgroundColor: colors.surfaceBackground,
     },
 });

@@ -1,137 +1,42 @@
+/**
+ * Academic preference row composed from icon and switch primitives.
+ *
+ * @author MRamirez202210582
+ * @packageDocumentation
+ */
 
 import React from 'react';
-import {
-    StyleSheet,
-    Switch,
-    Text,
-    View,
-} from 'react-native';
-
-interface PreferenceRowProps {
-    title: string;
-    description?: string;
-    value: boolean;
-    onValueChange: (value: boolean) => void;
-    disabled?: boolean;
-    icon?: string;
-    showDivider?: boolean;
+import { StyleSheet, View } from 'react-native';
+import { IconBox, Text, Toggle } from '@/components/ui';
+import { spacing } from '@/theme/tokens';
+import type { IconName, Tone } from '@/types/ui';
+/** Props accepted by {@link PreferenceRow}. */
+export interface PreferenceRowProps {
+  /** Name of the setting. */
+  title: string;
+  /** Description reflecting the current state. */
+  description: string;
+  /** Material Symbols icon. */
+  icon: IconName;
+  /**
+   * Icon color family.
+   *
+   * @defaultValue `'primary'`
+   */
+  tone?: Tone;
+  /** Current preference value. */
+  value: boolean;
+  /**
+   * Blocks interaction while saving.
+   *
+   * @defaultValue `false`
+   */
+  disabled?: boolean;
+  /** Reports the next preference value. */
+  onValueChange: (value: boolean) => void;
 }
-
-/**
- * Reusable preference row for the student profile.
- *
- * Supports controlled switches for settings such as
- * dark mode and daily reminders.
- */
-export function PreferenceRow({
-                                  title,
-                                  description,
-                                  value,
-                                  onValueChange,
-                                  disabled = false,
-                                  icon,
-                                  showDivider = true,
-                              }: PreferenceRowProps) {
-    return (
-        <View
-            style={[
-                styles.container,
-                showDivider && styles.divider,
-            ]}
-        >
-            {icon ? (
-                <View style={styles.iconContainer}>
-                    <Text style={styles.iconText}>
-                        {icon}
-                    </Text>
-                </View>
-            ) : null}
-
-            <View style={styles.content}>
-                <Text style={styles.title}>
-                    {title}
-                </Text>
-
-                {description ? (
-                    <Text style={styles.description}>
-                        {description}
-                    </Text>
-                ) : null}
-            </View>
-
-            <Switch
-                value={value}
-                onValueChange={onValueChange}
-                disabled={disabled}
-                trackColor={{
-                    false: '#DDE1F0',
-                    true: '#B8AEFF',
-                }}
-                thumbColor={
-                    value ? '#6C5CE7' : '#FFFFFF'
-                }
-                ios_backgroundColor="#DDE1F0"
-                accessibilityRole="switch"
-                accessibilityLabel={title}
-                accessibilityState={{
-                    checked: value,
-                    disabled,
-                }}
-                style={styles.switch}
-            />
-        </View>
-    );
+/** Displays a preference label, state description and controlled toggle. */
+export function PreferenceRow({ title, description, icon, tone = 'primary', value, disabled = false, onValueChange }: PreferenceRowProps) {
+  return <View style={styles.row}><IconBox icon={icon} tone={tone} size="md" variant="soft" /><View style={styles.copy}><Text variant="labelL">{title}</Text><Text variant="bodyM" color="secondary">{description}</Text></View><Toggle label={title} value={value} disabled={disabled} onValueChange={onValueChange} /></View>;
 }
-
-const styles = StyleSheet.create({
-    container: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingVertical: 16,
-        paddingHorizontal: 2,
-        minHeight: 70,
-    },
-
-    divider: {
-        borderBottomWidth: 1,
-        borderBottomColor: '#ECEEFA',
-    },
-
-    iconContainer: {
-        width: 38,
-        height: 38,
-        borderRadius: 11,
-        backgroundColor: '#F0EDFF',
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginRight: 12,
-    },
-
-    iconText: {
-        color: '#6C5CE7',
-        fontSize: 19,
-        fontWeight: '600',
-    },
-
-    content: {
-        flex: 1,
-        paddingRight: 12,
-    },
-
-    title: {
-        color: '#141A33',
-        fontSize: 13,
-        fontWeight: '600',
-    },
-
-    description: {
-        color: '#747B90',
-        fontSize: 11,
-        lineHeight: 17,
-        marginTop: 4,
-    },
-
-    switch: {
-        marginLeft: 8,
-    },
-});
+const styles = StyleSheet.create({ row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md }, copy: { flex: 1, minWidth: 0 } });
