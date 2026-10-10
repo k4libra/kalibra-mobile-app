@@ -19,11 +19,13 @@ import { spacing } from '@/theme/tokens';
  * Shows whether the answer was correct, the mastery change and the explanation, using {@link usePracticeResult}.
  */
 export function ExerciseResultScreen({ navigation, route }: RootScreenProps<'ExerciseResult'>) {
-  const { result, isLoading, error } = usePracticeResult(route.params.attemptId);
+  const { result, isSessionComplete, isLoading, error } = usePracticeResult(route.params.attemptId);
   const { student } = useCurrentStudent();
 
   const continuePractice = () => {
-    if (result) navigation.replace('Exercise', { courseId: result.courseId, subtopicId: result.subtopicId });
+    if (!result) return;
+    if (isSessionComplete) navigation.popTo('CourseSubtopics', { courseId: result.courseId });
+    else navigation.replace('Exercise', { courseId: result.courseId, subtopicId: result.subtopicId });
   };
 
   return (
@@ -31,7 +33,7 @@ export function ExerciseResultScreen({ navigation, route }: RootScreenProps<'Exe
       header={
         <AppHeader title="Resultado" onBack={navigation.goBack} avatar={student?.avatar} onProfile={() => navigation.navigate('Tabs', { screen: 'Profile' })} />
       }
-      footer={result && <Button label="Continuar practicando" icon="arrow_forward" onPress={continuePractice} />}
+      footer={result && <Button label={isSessionComplete ? 'Volver al subtema' : 'Continuar practicando'} icon="arrow_forward" onPress={continuePractice} />}
     >
       {error && <ErrorState message={error} />}
       {isLoading ? (

@@ -27,6 +27,21 @@ export interface CodeSnippet {
   source: string;
 }
 
+/** Ordered prose and code blocks extracted from a generated statement. */
+export type StatementSegment =
+  | {
+      /** Prose block discriminator. */
+      type: 'prose';
+      /** Original prose. */
+      text: string;
+    }
+  | {
+      /** Code block discriminator. */
+      type: 'code';
+      /** Display-only source and supplied language. */
+      snippet: CodeSnippet;
+    };
+
 /**
  * Describes one answer option.
  */
@@ -59,9 +74,9 @@ export interface PracticeExercise {
   levelLabel: string;
   /** Adaptive difficulty label, for example `Dificultad adaptativa: Nivel 2`. */
   difficultyLabel: string;
-  /** Position in a session, or null when the API does not report sessions. */
+  /** Position in the local visit, populated by the practice hook. */
   position: number | null;
-  /** Session size, or null when the API does not report sessions. */
+  /** Local visit size, populated by the practice hook. */
   sessionSize: number | null;
   /** Session points, or null when not supplied by the API. */
   sessionPoints: number | null;
@@ -69,6 +84,8 @@ export interface PracticeExercise {
   elapsed: string;
   /** Statement before the code. */
   prompt: RichTextSegment[];
+  /** Statement blocks in their original order, including embedded code. */
+  statementSegments: StatementSegment[];
   /** Code snippet of the exercise; `null` when there is none. */
   code: CodeSnippet | null;
   /** Question the student answers. */

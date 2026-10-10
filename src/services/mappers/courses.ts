@@ -8,6 +8,7 @@
 import type { CourseDto, MasteryDto, ProgressDto } from '@/types/api';
 import type { EnrolledCourse, StudentSubtopic } from '@/types/course';
 import type { CourseProgress } from '@/types/progress';
+import { plural } from '@/utils/plural';
 /**
  * Averages known percentages; no practice remains unknown rather than zero.
  *
@@ -102,7 +103,10 @@ export function mapSubtopics(
         icon: 'account_tree',
         mastery: progress.hasActivity ? measured?.mastery ?? null : null,
         note:
-          level === 'NO_DATA' || !progress.hasActivity ? 'Sin práctica' : '',
+          !progress.hasActivity ? 'Sin práctica'
+            : measured && measured.solvedCount > 0 ? plural(measured.solvedCount, 'resuelto', 'resueltos')
+            : level === 'NO_DATA' ? 'Sin práctica'
+            : { LOW: 'Dominio Bajo', MEDIUM: 'Dominio Medio', HIGH: 'Dominio Alto' }[level],
       };
     });
 }
