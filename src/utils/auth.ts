@@ -6,7 +6,7 @@
  */
 
 import type { AuthError, AuthErrorCode, AuthFieldErrors, SignUpData } from '@/types/auth';
-/** Spanish messages shared by validation and simulated endpoints. */
+/** Spanish messages shared by validation and HTTP endpoints. */
 export const AUTH_MESSAGES: Record<AuthErrorCode, string> = {
   INVALID_EMAIL: 'Ingresa un correo institucional válido (@universidad.edu)',
   EMAIL_ALREADY_REGISTERED: 'Ya existe una cuenta con este correo. Inicia sesión o usa otro correo.',
@@ -14,6 +14,13 @@ export const AUTH_MESSAGES: Record<AuthErrorCode, string> = {
   INVALID_PASSWORD: 'La contraseña debe tener al menos 8 caracteres y usar letras y números.',
   REQUIRED_FIELD: 'Este campo es obligatorio.',
   UNAUTHORIZED: 'Tu sesión no está disponible. Inicia sesión nuevamente.',
+  MOBILE_ACCESS_DENIED: 'Esta cuenta no tiene acceso a la app móvil',
+  FORBIDDEN: 'No tienes permiso para realizar esta acción.',
+  NOT_FOUND: 'No se encontró la información solicitada.',
+  NO_EXERCISES: 'Aún no hay ejercicios aprobados para este subtema',
+  CONFLICT: 'La información cambió. Actualiza e inténtalo nuevamente.',
+  SERVICE_UNAVAILABLE: 'Servicio no disponible por el momento',
+  NETWORK_ERROR: 'No se pudo conectar con el servidor. Revisa tu conexión e inténtalo nuevamente.',
   UNKNOWN_ERROR: 'Ocurrió un error inesperado. Inténtalo nuevamente.',
 };
 /**
