@@ -1,297 +1,108 @@
-
 /**
- * Mock data for academic progress and practice history.
+ * Simulated progress endpoints with sample data taken from the Figma mockups.
  *
- * Feature: progress-history
+ * @remarks
+ * Progress is derived from the shared course and subtopic fixtures, so the same mastery appears in
+ * Cursos, Subtemas and Progreso. History attempt ids follow the practice mock format
+ * (`ex-<subtopicId>:<optionId>`), so each entry opens a real simulated result.
  *
- * Course and subtopic information is reused from
- * the existing develop branch.
- *
- * Practice attempts are simulated to reproduce
- * the examples shown in Figma.
- *
+ * @author MRamirez202210582
  * @packageDocumentation
  */
 
+import type { ProgressContract } from '@/services/progress.contract';
+import type { CourseProgress, HistoryEntry, PracticeHistory } from '@/types/progress';
+import { LOW_MASTERY_THRESHOLD } from '@/utils/mastery';
 import { COURSES, SUBTOPICS } from './courses.mock';
-
-import type {
-    AcademicProgress,
-    CourseProgress,
-    HistoryFilter,
-    PracticeHistory,
-    PracticeHistoryItem,
-    PracticeHistorySummary,
-    PracticeRecommendation,
-    SubtopicProgress,
-    WeakSubtopic,
-} from '../types/progress';
-
-// --------------------------------------------------
-// Academic progress
-// --------------------------------------------------
-
-export const MOCK_PROGRESS_COURSE_ID = 'course-1';
-
-export const MOCK_SUBTOPIC_EXERCISE_COUNTS: Record<
-    string,
-    { correct: number; total: number }
-> = {
-    'sub-1': { correct: 14, total: 18 },
-    'sub-2': { correct: 12, total: 14 },
-    'sub-3': { correct: 5, total: 10 },
-    'sub-4': { correct: 0, total: 0 },
-};
-
-export function createCourseProgress(
-    courseId: string,
-    empty = false,
-): AcademicProgress {
-    const course = COURSES.find(
-        item => item.id === courseId,
-    );
-
-    if (!course) {
-        throw new Error(`Course ${courseId} not found`);
-    }
-
-    const courseSubtopics = SUBTOPICS.filter(
-        item => item.courseId === courseId,
-    );
-
-    const subtopics: SubtopicProgress[] =
-        courseSubtopics.map(subtopic => {
-            const counts =
-                MOCK_SUBTOPIC_EXERCISE_COUNTS[subtopic.id];
-
-            return {
-                subtopic,
-                mastery: empty ? null : subtopic.mastery,
-                correctExerciseCount: empty
-                    ? 0
-                    : counts?.correct ?? 0,
-                totalExerciseCount: empty
-                    ? 0
-                    : counts?.total ?? 0,
-                isPracticed: !empty && subtopic.mastery !== null,
-            };
-        });
-
-    const practicedSubtopicCount = subtopics.filter(
-        item => item.isPracticed,
-    ).length;
-
-    const mastery = empty ? null : course.mastery;
-
-    const level =
-        mastery === null
-            ? 'not_started'
-            : mastery >= 80
-                ? 'advanced'
-                : mastery >= 50
-                    ? 'intermediate'
-                    : 'basic';
-
-    const levelLabel =
-        level === 'advanced'
-            ? 'Avanzado'
-            : level === 'intermediate'
-                ? 'Intermedio Avanzado'
-                : level === 'basic'
-                    ? 'En desarrollo'
-                    : 'Sin estimación';
-
-    const courseProgress: CourseProgress = {
-        course,
-        mastery,
-        solvedExerciseCount: empty
-            ? 0
-            : course.solvedExerciseCount,
-        practicedSubtopicCount,
-        totalSubtopicCount: courseSubtopics.length,
-        level,
-        levelLabel,
-        isEmpty: empty || mastery === null,
-    };
-
-    const weakest = empty
-        ? undefined
-        : subtopics
-            .filter(item => item.mastery !== null)
-            .sort(
-                (a, b) =>
-                    (a.mastery ?? 0) - (b.mastery ?? 0),
-            )[0];
-
-    let weakSubtopic: WeakSubtopic | null = null;
-
-    if (weakest && weakest.mastery !== null) {
-        weakSubtopic = {
-            subtopicId: weakest.subtopic.id,
-            courseId,
-            name: weakest.subtopic.name,
-            mastery: weakest.mastery,
-            recommendedExerciseCount: 9,
-            description:
-                'Recomendamos 9 ejercicios guiados hoy para consolidar memoización y formulación de estados.',
-        };
-    }
-
-    return {
-        courseProgress,
-        subtopics,
-        weakSubtopic,
-    };
-}
-
-export const MOCK_ACADEMIC_PROGRESS =
-    createCourseProgress(MOCK_PROGRESS_COURSE_ID);
-
-export const MOCK_EMPTY_ACADEMIC_PROGRESS =
-    createCourseProgress(MOCK_PROGRESS_COURSE_ID, true);
-
-// --------------------------------------------------
-// Practice history
-// --------------------------------------------------
+import { isEmptyScenario, respond } from './scenario';
+import { hasDemoSession } from './session.mock';
 
 /**
- * Visible examples from the Figma mockup.
- * These are demonstration records, not backend data.
+ * Right and submitted answers of the demo student per subtopic.
  */
-export const MOCK_HISTORY_ITEMS: PracticeHistoryItem[] = [
-    {
-        id: 'attempt-1',
-        exerciseId: 'exercise-1',
-        courseId: 'course-1',
-        subtopicId: 'sub-1',
-        subtopicName: 'Recursividad y Backtracking',
-        exerciseTitle:
-            'Evaluación de función recursiva misterio(n)',
-        outcome: 'correct',
-        completedAt: '2025-05-09T10:45:00',
-        durationSeconds: 102,
-        reviewPending: false,
-    },
-    {
-        id: 'attempt-2',
-        exerciseId: 'exercise-2',
-        courseId: 'course-1',
-        subtopicId: 'sub-3',
-        subtopicName: 'Programación Dinámica',
-        exerciseTitle:
-            'Matriz de subsecuencia común más larga (LCS)',
-        outcome: 'incorrect',
-        completedAt: '2025-05-09T16:20:00',
-        durationSeconds: 250,
-        reviewPending: true,
-    },
-    {
-        id: 'attempt-3',
-        exerciseId: 'exercise-3',
-        courseId: 'course-1',
-        subtopicId: 'sub-2',
-        subtopicName: 'Árboles Binarios de Búsqueda',
-        exerciseTitle:
-            'Rotación simple a la derecha en árbol AVL',
-        outcome: 'correct',
-        completedAt: '2025-05-12T18:05:00',
-        durationSeconds: 0,
-        reviewPending: false,
-    },
+export const SUBTOPIC_ANSWERS: Record<string, { correctCount: number; attemptCount: number }> = {
+  'sub-1': { correctCount: 14, attemptCount: 18 },
+  'sub-2': { correctCount: 12, attemptCount: 14 },
+  'sub-3': { correctCount: 4, attemptCount: 10 },
+  'sub-5': { correctCount: 9, attemptCount: 11 },
+  'sub-6': { correctCount: 5, attemptCount: 7 },
+  'sub-7': { correctCount: 2, attemptCount: 3 },
+  'sub-8': { correctCount: 0, attemptCount: 0 },
+  'sub-9': { correctCount: 4, attemptCount: 4 },
+  'sub-10': { correctCount: 4, attemptCount: 5 },
+  'sub-11': { correctCount: 2, attemptCount: 3 },
+  'sub-12': { correctCount: 1, attemptCount: 2 },
+};
+
+/**
+ * Practice suggested for each subtopic when it needs urgent reinforcement.
+ */
+export const FOCUS_MESSAGES: Record<string, string> = {
+  'sub-3': 'Recomendamos 3 ejercicios guiados hoy para consolidar memoización y formulación de estados.',
+};
+
+/**
+ * Recent recorded answers of the demo student.
+ */
+export const HISTORY_ENTRIES: HistoryEntry[] = [
+  { attemptId: 'ex-sub-1:opt-a', subtopicName: 'Recursividad y Backtracking', title: 'Evaluación de función recursiva misterio(n)', result: 'correct', isPendingReview: false, answeredAt: 'Hoy, 10:45 AM', isRecent: true, duration: '1m 42s' },
+  { attemptId: 'ex-sub-3:opt-c', subtopicName: 'Programación Dinámica', title: 'Matriz de subsecuencia común más larga (LCS)', result: 'incorrect', isPendingReview: true, answeredAt: 'Ayer, 16:20 PM', isRecent: true, duration: '4m 10s' },
+  { attemptId: 'ex-sub-2:opt-a', subtopicName: 'Árboles Binarios de Búsqueda', title: 'Rotación simple a la derecha en árbol AVL', result: 'correct', isPendingReview: false, answeredAt: '12 Oct, 18:05 PM', isRecent: false, duration: null },
 ];
 
+// Totals of the whole history of the demo student, of which only the latest entries are listed.
+const DEMO_SUMMARY = { total: 42, correct: 31, incorrect: 11 };
+
+// Practice advice shown under a filtered history.
+const ADVICE = 'Repasa hoy los ejercicios marcados como pendientes y vuelve a intentarlos en dos días: espaciar la práctica fija mejor lo aprendido.';
+
 /**
- * The Figma dashboard represents 42 attempts:
- * 31 correct and 11 to review.
+ * Builds the progress of the demo student in a course from the shared fixtures.
  *
- * Only three individual example records are
- * available in the mockup. The remaining
- * attempts are represented by aggregate totals.
+ * @param courseId - Enrolled course.
+ * @returns The course progress, or `null` when the course is not enrolled.
  */
-export const MOCK_HISTORY_TOTALS = {
-    all: 42,
-    correct: 31,
-    review: 11,
-} as const;
-
-export const MOCK_HISTORY_RECOMMENDATION:
-    PracticeRecommendation = {
-    title: 'Consejo de práctica espaciada',
-    description:
-        'Repasar los ejercicios incorrectos antes de 48 horas incrementa la retención del patrón algorítmico hasta un 70%.',
-    targetAccuracy: 70,
-};
-
-export const MOCK_HISTORY_SUMMARY:
-    PracticeHistorySummary = {
-    totalAttempts: MOCK_HISTORY_TOTALS.all,
-    correctAttempts: MOCK_HISTORY_TOTALS.correct,
-    incorrectAttempts: MOCK_HISTORY_TOTALS.review,
-    accuracyPercentage: 74,
-    counts: {
-        all: MOCK_HISTORY_TOTALS.all,
-        correct: MOCK_HISTORY_TOTALS.correct,
-        review: MOCK_HISTORY_TOTALS.review,
-    },
-};
-
-export const MOCK_EMPTY_HISTORY_SUMMARY:
-    PracticeHistorySummary = {
-    totalAttempts: 0,
-    correctAttempts: 0,
-    incorrectAttempts: 0,
-    accuracyPercentage: null,
-    counts: {
-        all: 0,
-        correct: 0,
-        review: 0,
-    },
-};
-
-export function createPracticeHistory(
-    filter: HistoryFilter = 'all',
-    empty = false,
-): PracticeHistory {
-    if (empty) {
-        return {
-            summary: MOCK_EMPTY_HISTORY_SUMMARY,
-            items: [],
-            recommendation: null,
-            isEmpty: true,
-        };
-    }
-
-    const items = MOCK_HISTORY_ITEMS.filter(item => {
-        if (filter === 'correct') {
-            return item.outcome === 'correct';
-        }
-
-        if (filter === 'review') {
-            return item.reviewPending;
-        }
-
-        return true;
-    });
-
-    return {
-        summary: MOCK_HISTORY_SUMMARY,
-        items,
-        recommendation:
-            filter === 'correct' || filter === 'review'
-                ? MOCK_HISTORY_RECOMMENDATION
-                : null,
-        isEmpty: false,
-    };
+export function buildCourseProgress(courseId: string): CourseProgress | null {
+  const course = COURSES.find(item => item.id === courseId);
+  if (!course) return null;
+  const empty = isEmptyScenario();
+  const subtopics = SUBTOPICS.filter(item => item.courseId === courseId)
+    .map(subtopic => ({
+      ...subtopic,
+      mastery: empty ? null : subtopic.mastery,
+      ...(empty ? { correctCount: 0, attemptCount: 0 } : SUBTOPIC_ANSWERS[subtopic.id] ?? { correctCount: 0, attemptCount: 0 }),
+    }))
+    .sort((a, b) => (b.mastery ?? -1) - (a.mastery ?? -1));
+  const weakest = [...subtopics].reverse().find(item => item.mastery !== null && item.mastery < LOW_MASTERY_THRESHOLD);
+  return {
+    course: empty ? { ...course, mastery: null, solvedExerciseCount: 0, masteredSubtopicCount: 0 } : course,
+    subtopics,
+    practicedSubtopicCount: subtopics.filter(item => item.attemptCount > 0).length,
+    focus:
+      weakest && weakest.mastery !== null
+        ? {
+            subtopicId: weakest.id,
+            subtopicName: weakest.name,
+            mastery: weakest.mastery,
+            message: FOCUS_MESSAGES[weakest.id] ?? `Practica ejercicios guiados de ${weakest.name} para subir tu dominio.`,
+          }
+        : null,
+  };
 }
 
-export const MOCK_PRACTICE_HISTORY =
-    createPracticeHistory();
-
-export const MOCK_CORRECT_HISTORY =
-    createPracticeHistory('correct');
-
-export const MOCK_REVIEW_HISTORY =
-    createPracticeHistory('review');
-
-export const MOCK_EMPTY_PRACTICE_HISTORY =
-    createPracticeHistory('all', true);
+/**
+ * Simulated implementation of {@link ProgressContract}.
+ */
+export const progressMock: ProgressContract = {
+  getCourseProgress: courseId => {
+    const progress = hasDemoSession() ? buildCourseProgress(courseId) : null;
+    return progress ? respond(progress) : Promise.reject(new Error(`Course ${courseId} not enrolled`));
+  },
+  getHistory: () => {
+    const hasActivity = hasDemoSession() && !isEmptyScenario();
+    const history: PracticeHistory = hasActivity
+      ? { summary: DEMO_SUMMARY, entries: HISTORY_ENTRIES, advice: ADVICE }
+      : { summary: { total: 0, correct: 0, incorrect: 0 }, entries: [], advice: ADVICE };
+    return respond(history);
+  },
+};

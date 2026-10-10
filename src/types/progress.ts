@@ -1,162 +1,107 @@
-
 /**
- * Academic progress and practice history models.
+ * Domain types of the academic progress and practice history of a student.
  *
- * Feature: progress-history
- *
- * Models for the progress dashboard, subtopic
- * mastery, practice attempts and history filters.
- *
+ * @author MRamirez202210582
  * @packageDocumentation
  */
 
-import type {
-    EnrolledCourse,
-    StudentSubtopic,
-} from './course';
+import type { EnrolledCourse, StudentSubtopic } from './course';
 
 /**
- * Supported history filters from Figma.
+ * Describes a subtopic with the mastery and answer counts of the student.
  */
-export type HistoryFilter =
-    | 'all'
-    | 'correct'
-    | 'review';
+export interface SubtopicProgress extends StudentSubtopic {
+  /** Answers the student got right in the subtopic. */
+  correctCount: number;
+  /** Answers the student submitted in the subtopic. */
+  attemptCount: number;
+}
 
 /**
- * Result of a completed exercise.
+ * Describes the subtopic that most needs reinforcement and what to practice.
  */
-export type ExerciseOutcome =
-    | 'correct'
-    | 'incorrect';
+export interface FocusRecommendation {
+  /** Subtopic to reinforce. */
+  subtopicId: string;
+  /** Name of the subtopic. */
+  subtopicName: string;
+  /** Mastery of the student in the subtopic, from 0 to 100. */
+  mastery: number;
+  /** Suggested practice for the subtopic. */
+  message: string;
+}
 
 /**
- * Learning progress classification.
- */
-export type ProgressLevel =
-    | 'advanced'
-    | 'intermediate'
-    | 'basic'
-    | 'not_started';
-
-/**
- * Summary displayed in the academic
- * progress dashboard.
+ * Describes the progress of the student in one enrolled course.
  */
 export interface CourseProgress {
-    course: EnrolledCourse;
-    mastery: number | null;
-    solvedExerciseCount: number;
-    practicedSubtopicCount: number;
-    totalSubtopicCount: number;
-    level: ProgressLevel;
-    levelLabel: string;
-    isEmpty: boolean;
+  /** Course of the progress. */
+  course: EnrolledCourse;
+  /** Subtopics ordered from the highest to the lowest mastery. */
+  subtopics: SubtopicProgress[];
+  /** Subtopics with at least one submitted answer. */
+  practicedSubtopicCount: number;
+  /** Lowest-mastery subtopic below the low threshold; `null` when none needs urgent reinforcement. */
+  focus: FocusRecommendation | null;
 }
 
 /**
- * Subtopic information displayed in
- * the mastery breakdown.
+ * Outcome of a recorded answer.
  */
-export interface SubtopicProgress {
-    subtopic: StudentSubtopic;
-    mastery: number | null;
-    correctExerciseCount: number;
-    totalExerciseCount: number;
-    isPracticed: boolean;
-}
+export type AttemptResult = 'correct' | 'incorrect';
 
 /**
- * Priority recommendation for a
- * subtopic requiring reinforcement.
+ * Subset of history shown by the filter tabs.
+ *
+ * @remarks
+ * - `all`: every recorded answer.
+ * - `correct`: only right answers.
+ * - `review`: only wrong answers, which the student should review.
  */
-export interface WeakSubtopic {
-    subtopicId: string;
-    courseId: string;
-    name: string;
-    mastery: number;
-    recommendedExerciseCount: number;
-    description: string;
-}
+export type HistoryFilter = 'all' | 'correct' | 'review';
 
 /**
- * Complete academic progress response.
+ * Describes one recorded answer of the practice history.
  */
-export interface AcademicProgress {
-    courseProgress: CourseProgress;
-    subtopics: SubtopicProgress[];
-    weakSubtopic: WeakSubtopic | null;
+export interface HistoryEntry {
+  /** Identifier of the recorded answer, used to open its result. */
+  attemptId: string;
+  /** Name of the subtopic of the exercise. */
+  subtopicName: string;
+  /** Title of the exercise. */
+  title: string;
+  /** Outcome of the answer. */
+  result: AttemptResult;
+  /** Whether a wrong answer is still waiting to be reviewed. */
+  isPendingReview: boolean;
+  /** Human-readable answer time, for example `Hoy, 10:45 AM`. */
+  answeredAt: string;
+  /** Whether `answeredAt` is relative to today (shown with a clock) or a calendar date. */
+  isRecent: boolean;
+  /** Time the student took, for example `1m 42s`; `null` when unknown. */
+  duration: string | null;
 }
 
 /**
- * Single completed exercise attempt.
+ * Describes the totals of the practice history.
  */
-export interface PracticeHistoryItem {
-    id: string;
-    exerciseId: string;
-    courseId: string;
-    subtopicId: string;
-    subtopicName: string;
-    exerciseTitle: string;
-    outcome: ExerciseOutcome;
-    completedAt: string;
-    durationSeconds: number;
-    reviewPending: boolean;
+export interface HistorySummary {
+  /** Answers recorded. */
+  total: number;
+  /** Right answers. */
+  correct: number;
+  /** Wrong answers. */
+  incorrect: number;
 }
 
 /**
- * Counters displayed in the history filters.
- */
-export interface HistoryCounts {
-    all: number;
-    correct: number;
-    review: number;
-}
-
-/**
- * Summary of student practice history.
- */
-export interface PracticeHistorySummary {
-    totalAttempts: number;
-    correctAttempts: number;
-    incorrectAttempts: number;
-    accuracyPercentage: number | null;
-    counts: HistoryCounts;
-}
-
-/**
- * Specialized practice recommendation
- * shown when filtering incorrect exercises.
- */
-export interface PracticeRecommendation {
-    title: string;
-    description: string;
-    targetAccuracy: number;
-}
-
-/**
- * Complete practice history response.
+ * Describes the practice history of the student.
  */
 export interface PracticeHistory {
-    summary: PracticeHistorySummary;
-    items: PracticeHistoryItem[];
-    recommendation: PracticeRecommendation | null;
-    isEmpty: boolean;
-}
-
-/**
- * Parameters for retrieving history.
- */
-export interface HistoryQuery {
-    filter?: HistoryFilter;
-    courseId?: string;
-    subtopicId?: string;
-}
-
-/**
- * Generic loading state for feature data.
- */
-export interface ProgressLoadingState {
-    isLoading: boolean;
-    error: string | null;
+  /** Totals of every recorded answer. */
+  summary: HistorySummary;
+  /** Most recent recorded answers, newest first. */
+  entries: HistoryEntry[];
+  /** Spaced-practice advice shown under a filtered list. */
+  advice: string;
 }
