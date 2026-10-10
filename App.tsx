@@ -11,6 +11,7 @@ import { DefaultTheme, NavigationContainer, type Theme } from '@react-navigation
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { RootNavigator } from '@/navigation/RootNavigator';
 import { AuthProvider } from '@/context/AuthContext';
+import { PracticeProvider } from '@/context/PracticeContext';
 import { colors } from '@/theme/tokens';
 
 // Navigation theme aligned with the design system surfaces.
@@ -29,7 +30,9 @@ export default function App() {
                 <StatusBar barStyle="dark-content" />
 
                 <NavigationContainer theme={NAVIGATION_THEME}>
+                  <PracticeProvider>
                     <RootNavigator />
+                  </PracticeProvider>
                 </NavigationContainer>
             </AuthProvider>
         </SafeAreaProvider>
