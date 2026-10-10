@@ -2,7 +2,7 @@
 
 App del estudiante de Kalibra (React Native): cursos e invitaciones, práctica adaptativa, progreso, historial y perfil.
 
-> Estado actual: **solo interfaz y navegación**. No hay integración con la API; los datos salen de servicios simulados (`src/mocks`).
+> Estado actual: **integración HTTP con el contrato API v2**. Autenticación por cookie, cursos, invitaciones, práctica, progreso, historial y preferencias consumen la API. Los fixtures existen únicamente en tests.
 
 ## Stack
 
@@ -48,20 +48,50 @@ npx tsc --noEmit
 npm test
 ```
 
-## Acceso de demostración
+## Ejecución con la API
 
-La app inicia en **Iniciar sesión**. Credenciales exclusivamente locales del mock:
+La app inicia en **Iniciar sesión** y restaura la sesión con `GET /api/v1/users/me`. Necesita una versión de `kalibra-api` que implemente el contrato v2 (incluye nombres de usuario y `/students/me/courses`). El código local consultado durante esta integración aún no exponía ambos endpoints nuevos; sin esos cambios no se pueden validar los flujos contra el backend real.
 
-| Campo | Valor |
+1. En el repositorio hermano `kalibra-api`, configura su `.env` local según su documentación (base de datos y proveedores del motor). Para usar cuentas genéricas y HTTP local agrega:
+
+   ```dotenv
+   KALIBRA_SEED_GENERIC_USERS=true
+   JWT_COOKIE_SECURE=false
+   ```
+
+   No versiones ese archivo ni sus credenciales.
+
+2. Levanta el stack desde el repositorio de la API:
+
+   ```bash
+   cd ../kalibra-api
+   docker compose up --build
+   ```
+
+3. Inicia Metro y la app desde este repositorio con `npm start` y `npm run android` o `npm run ios`.
+
+| Plataforma | URL base local |
 | --- | --- |
-| Correo | `v.morales@upc.edu.pe` |
-| Contraseña | `Kalibra2025!` |
+| Emulador Android | `http://10.0.2.2:8080/api/v1` |
+| Simulador iOS | `http://localhost:8080/api/v1` |
 
-El demo conserva sus cursos y estadísticas (77 ejercicios, 71% de dominio, 3 cursos activos). Un registro válido con otro correo institucional (`.edu` o `.edu.pe`) entra a Cursos sin inscripciones y con estadísticas en cero. La contraseña requiere al menos ocho caracteres, letras y números.
+`src/config/api.ts` selecciona la dirección por `Platform`. Android permite HTTP únicamente a `10.0.2.2` y `localhost` en debug mediante `network_security_config`; release lo bloquea. Estas direcciones son para simuladores, no para dispositivos físicos.
 
-Las cuentas y preferencias se mantienen **solo en memoria** y se reinician al cerrar el runtime. «Recordar en este dispositivo» no persiste credenciales. Al cerrar sesión se elimina el stack autenticado; Android back no puede recuperar los tabs.
+Cuentas genéricas creadas por el seed de la API, exclusivamente para entornos locales:
 
-Para ver los estados vacíos (sin cursos) cambia `MOCK_SCENARIO` a `'empty'` en `src/mocks/scenario.ts`.
+| Correo | Contraseña |
+| --- | --- |
+| `estudiante.test1@upc.edu.pe` | `@estudiantetest1` |
+| `estudiante.test2@upc.edu.pe` | `@estudiantetest2` |
+| `estudiante.test3@upc.edu.pe` | `@estudiantetest3` |
+
+Registro e inicio de sesión envían `application: 'MOBILE_APP'`; las cuentas de docentes/administradores reciben el aviso de acceso denegado. El registro envía el primer término del nombre completo como `firstName` y el resto como `lastName`, y luego inicia sesión para obtener la cookie.
+
+El JWT permanece en la cookie `token` httpOnly del cliente nativo: no se guarda ni se lee desde JavaScript. «Recordar en este dispositivo» no cambia la duración de la cookie; la controla la API. Un 401 en una llamada protegida elimina la sesión y el stack autenticado. Al cerrar sesión se solicita `POST /authentication/sign-out`.
+
+Los recordatorios se persisten con su hora existente; si nunca se configuró una, al habilitarlos se usa `20:00:00` UTC, según el contrato de preferencias. El modo nocturno persiste su preferencia; aún falta implementar una paleta oscura.
+
+Sin ejercicios aprobados, práctica muestra el estado vacío (404); si el motor no está disponible, muestra «Servicio no disponible por el momento» (503). La API no entrega pistas, duración, puntajes de sesión, facultad, ciclo ni tiempo estimado: esos campos se omiten. Las explicaciones se muestran completas tal como las devuelve el servidor, sin sintetizar pasos. El historial lee todas las páginas por curso y conserva los conteos globales al filtrar.
 
 ## Arquitectura por capas
 
@@ -72,8 +102,9 @@ src/
 ├── components/<feature> componentes de cada funcionalidad
 ├── screens              una pantalla por ruta
 ├── hooks                estado de cada vista; único puente hacia services
-├── services             contratos y servicios (hoy apuntan a mocks)
-├── mocks                datos de ejemplo y servicios simulados
+├── services             contratos, cliente HTTP único y mappers puros
+├── config               URL local por plataforma
+├── test                 fixtures tipados y stub de fetch exclusivo de pruebas
 ├── navigation           stack raíz, tabs y tipos de rutas
 ├── theme                tokens (mismo contenido que `@theme` de kalibra-web-app)
 ├── types                modelos de dominio y variantes de UI
@@ -93,10 +124,16 @@ Toda rama nace de `develop`.
 | `feature/adaptive-practice` | Gonzalo |
 | `feature/progress-history` | compañero |
 
-Las pantallas de otras ramas muestran `PlaceholderScreen` hasta que se integran.
+Las funcionalidades estudiantiles están integradas en `feature/api-integration`; esta rama no se publica automáticamente.
 
-## Reglas por capa
+## Verificación
 
-[Componentes](src/components/README.md) · [Pantallas](src/screens/README.md) · [Hooks](src/hooks/README.md) · [Servicios](src/services/README.md) · [Contexto](src/context/README.md) · [Tipos](src/types/README.md) · [Utilidades](src/utils/README.md) · [Mocks](src/mocks/README.md) · [Navegación](src/navigation/README.md).
+```bash
+npx tsc --noEmit
+npx eslint .
+npx jest
+```
+
+Los tests reemplazan únicamente el transporte `fetch` por fixtures tipados de cuentas genéricas; los servicios de producción siempre usan HTTP. Incluyen rutas, payloads, cookies, errores, mappers, paginación y navegación completa.
 
 La ilustración `study-preview.png` se extrajo del frame de inicio de sesión proporcionado en `_figma/mobile/02_inicio_sesion.png`.

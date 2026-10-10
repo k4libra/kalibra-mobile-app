@@ -6,19 +6,20 @@
  */
 
 import { authService } from '@/services/auth.service';
-import { DEMO_CREDENTIALS, resetAuthMock } from '@/mocks/auth.mock';
+import { TEST_CREDENTIALS } from '@/test/apiFixtures';
+import { resetApiStub } from '@/test/fetchStub';
 import { invitationsService } from './invitations.service';
 
 
 beforeEach(async () => {
-  resetAuthMock();
-  await authService.signIn(DEMO_CREDENTIALS);
+  resetApiStub();
+  await authService.signIn(TEST_CREDENTIALS);
 });
 
 describe('invitationsService', () => {
-  it('lists pending and expired invitations', async () => {
+  it('lists the pending invitations returned by the API', async () => {
     const statuses = (await invitationsService.listInvitations()).map(invitation => invitation.status);
-    expect(statuses).toEqual(expect.arrayContaining(['pending', 'expired']));
+    expect(statuses).toEqual(['pending']);
   });
 
   it('accepts a pending invitation', async () => {

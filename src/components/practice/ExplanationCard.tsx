@@ -28,10 +28,11 @@ export function ExplanationCard({ result }: ExplanationCardProps) {
       <View style={styles.header}>
         <IconBox icon="terminal" size="sm" />
         <Text variant="headlineM" style={styles.flex} isHeading>
-          Explicación paso a paso
+          Explicación
         </Text>
-        <Chip label={result.explanationTag} tone="neutral" />
+        {result.explanationTag ? <Chip label={result.explanationTag} tone="neutral" /> : null}
       </View>
+      {result.explanation ? <Text variant="bodyM">{result.explanation}</Text> : null}
       {result.steps.map(step => (
         <View key={step.order} style={[styles.step, step.isKey && styles.keyStep]}>
           <View style={[styles.order, step.isKey && styles.keyOrder]}>
@@ -50,7 +51,7 @@ export function ExplanationCard({ result }: ExplanationCardProps) {
           </View>
         </View>
       ))}
-      <View style={styles.summary}>
+      {result.summaryValue ? <View style={styles.summary}>
         <Icon name="functions" size="sm" color={colors.primaryStrong} />
         <Text variant="bodyMBold" style={styles.flex}>
           {result.summaryLabel}
@@ -58,8 +59,8 @@ export function ExplanationCard({ result }: ExplanationCardProps) {
         <Text variant="headlineM" color="brand">
           {result.summaryValue}
         </Text>
-      </View>
-      <View style={styles.tip}>
+      </View> : null}
+      {result.tipBody ? <View style={styles.tip}>
         <Icon name="lightbulb" size="sm" color={colors.tertiaryStrong} />
         <View style={styles.flex}>
           <Text variant="bodyMBold" color="warning">
@@ -69,7 +70,7 @@ export function ExplanationCard({ result }: ExplanationCardProps) {
             {result.tipBody}
           </Text>
         </View>
-      </View>
+      </View> : null}
     </Card>
   );
 }

@@ -34,7 +34,7 @@ export function defaultProgressCourseId(courses: EnrolledCourse[]): string | nul
  * ```
  */
 export function useProgress() {
-  const coursesState = useResource(coursesService.listCourses, 'progress-courses');
+  const coursesState = useResource(coursesService.listCourses, 'progress-courses', true);
   const courses = coursesState.data ?? [];
   const [chosenCourseId, setChosenCourseId] = useState<string | null>(null);
   const selectedCourseId =
@@ -43,6 +43,7 @@ export function useProgress() {
   const progressState = useResource(
     () => (selectedCourseId ? progressService.getCourseProgress(selectedCourseId) : Promise.resolve(null)),
     `progress-${selectedCourseId ?? 'none'}`,
+    true,
   );
 
   return {

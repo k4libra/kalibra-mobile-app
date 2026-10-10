@@ -6,7 +6,7 @@
  */
 
 import type { AuthSession, ProfilePreferences, SignInCredentials, SignOutResult, SignUpData, StudentProfile, StudyPreviewData } from '@/types/auth';
-/** Contract implemented by simulated authentication endpoints. */
+/** Contract implemented by HTTP authentication endpoints. */
 export interface AuthServiceContract {
   /**
    * Loads the public study preview shown at account access.
@@ -29,13 +29,13 @@ export interface AuthServiceContract {
    */
   signIn(credentials: SignInCredentials): Promise<AuthSession>;
   /**
-   * Removes the current mock session.
+   * Expires the native token cookie.
    * @returns A successful logout result.
    * @throws Error when the endpoint is unavailable.
    */
   signOut(): Promise<SignOutResult>;
   /**
-   * Restores the current in-memory session.
+   * Restores the cookie session through users/me.
    * @returns The session or null when signed out.
    * @throws Error when restoration is unavailable.
    */

@@ -7,17 +7,17 @@
 
 import React from 'react';
 import ReactTestRenderer from 'react-test-renderer';
-import { setMockSession } from '@/mocks/session.mock';
+import { authService } from '@/services/auth.service';
+import { resetApiStub } from '@/test/fetchStub';
+import { TEST_CREDENTIALS } from '@/test/apiFixtures';
 import { usePracticeHistory } from './usePracticeHistory';
 
 jest.useFakeTimers();
 
-const demo = { user: { id: 'student-1', fullName: 'Valentina Morales Rivera', email: 'v.morales@upc.edu.pe' }, token: 'mock' };
-
-afterEach(() => setMockSession(null));
+beforeEach(async () => { resetApiStub(); await authService.signIn(TEST_CREDENTIALS); });
+afterEach(() => jest.restoreAllMocks());
 
 test('filters the loaded history by outcome', async () => {
-  setMockSession(demo as never);
   let state: ReturnType<typeof usePracticeHistory> | undefined;
   function Probe() {
     state = usePracticeHistory();

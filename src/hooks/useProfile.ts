@@ -22,7 +22,7 @@ import { normalizeAuthError } from '@/utils/auth';
  */
 export function useProfile() {
   const { session, signOut } = useAuth();
-  const resource = useResource(authService.getProfile, `profile-${session?.accessToken}`);
+  const resource = useResource(authService.getProfile, `profile-${session?.user.id}`, true);
   const [preferences, setPreferences] = useState<ProfilePreferences | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);

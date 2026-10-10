@@ -6,6 +6,9 @@
  */
 
 import { useCallback, useContext, useEffect, useState } from 'react';
+import { NavigationContext } from '@react-navigation/native';
+import type { AuthErrorCode } from '@/types/auth';
+import { normalizeAuthError } from '@/utils/auth';
 import { AuthContext } from '@/context/AuthContext';
 
 /**
@@ -20,6 +23,8 @@ export interface ResourceState<T> {
   isLoading: boolean;
   /** Message of the last failure; `null` when the last request succeeded. */
   error: string | null;
+  /** Typed domain reason; null until a request fails. */
+  errorCode: AuthErrorCode | null;
   /** Repeats the request. */
   refetch: () => void;
 }
@@ -34,6 +39,7 @@ export interface ResourceState<T> {
  * @typeParam T - Shape of the loaded data.
  * @param loader - Function that returns the data; usually a service method.
  * @param key - Serializable value that identifies the request, for example the course id.
+ * @param refreshOnFocus - Whether returning to a read-only screen refreshes its data.
  * @returns The `data`, the `isLoading` and `error` state, and `refetch` to reload.
  *
  * @example
@@ -41,26 +47,28 @@ export interface ResourceState<T> {
  * const { data, isLoading } = useResource(() => coursesService.listSubtopics(courseId), courseId);
  * ```
  */
-export function useResource<T>(loader: () => Promise<T>, key: string): ResourceState<T> {
+export function useResource<T>(loader: () => Promise<T>, key: string, refreshOnFocus = false): ResourceState<T> {
+  const navigation = useContext(NavigationContext);
   const [version, setVersion] = useState(0);
   const session = useContext(AuthContext)?.session;
-  const accountKey = session?.accessToken ?? 'signed-out';
+  const accountKey = session?.user.id ?? 'signed-out';
   const requestKey = `${accountKey}:${key}#${version}`;
-  const [result, setResult] = useState<{ requestKey: string | null; data: T | null; error: string | null }>({
+  const [result, setResult] = useState<{ requestKey: string | null; data: T | null; error: string | null; errorCode: AuthErrorCode | null }>({
     requestKey: null,
     data: null,
     error: null,
+    errorCode: null,
   });
 
   useEffect(() => {
     let isCurrent = true;
     loader()
       .then(data => {
-        if (isCurrent) setResult({ requestKey, data, error: null });
+        if (isCurrent) setResult({ requestKey, data, error: null, errorCode: null });
       })
       .catch((reason: unknown) => {
         const error = reason instanceof Error ? reason.message : 'No se pudo cargar la información.';
-        if (isCurrent) setResult(previous => ({ requestKey, data: previous.requestKey === requestKey ? previous.data : null, error }));
+        if (isCurrent) setResult(previous => ({ requestKey, data: previous.requestKey === requestKey ? previous.data : null, error, errorCode: normalizeAuthError(reason).code }));
       });
     return () => {
       isCurrent = false;
@@ -70,6 +78,10 @@ export function useResource<T>(loader: () => Promise<T>, key: string): ResourceS
   }, [requestKey]);
 
   const refetch = useCallback(() => setVersion(value => value + 1), []);
+  useEffect(() => {
+    if (refreshOnFocus) return navigation?.addListener('focus', refetch);
+    return undefined;
+  }, [navigation, refreshOnFocus, refetch]);
   const isLoading = result.requestKey !== requestKey;
-  return { data: isLoading ? null : result.data, isLoading, error: isLoading ? null : result.error, refetch };
+  return { data: isLoading ? null : result.data, isLoading, error: isLoading ? null : result.error, errorCode: isLoading ? null : result.errorCode, refetch };
 }

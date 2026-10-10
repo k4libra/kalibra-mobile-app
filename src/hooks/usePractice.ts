@@ -16,7 +16,7 @@ import { useResource } from './useResource';
  * @param courseId - Course being practiced.
  * @param subtopicId - Subtopic being practiced.
  * @returns The `exercise` (`null` while loading), `submit` (resolves with the result or `null` on
- * failure), and the `isLoading`, `isSubmitting` and `error` state.
+ * failure), and the `isLoading`, `isSubmitting`, `isEmpty` and `error` state.
  *
  * @example
  * ```tsx
@@ -24,7 +24,7 @@ import { useResource } from './useResource';
  * ```
  */
 export function useExercise(courseId: string, subtopicId: string) {
-  const { data, isLoading, error } = useResource(
+  const { data, isLoading, error, errorCode } = useResource(
     () => practiceService.getNextExercise(courseId, subtopicId),
     `exercise-${courseId}-${subtopicId}`,
   );
@@ -44,7 +44,7 @@ export function useExercise(courseId: string, subtopicId: string) {
     }
   }, []);
 
-  return { exercise: data, submit, isLoading, isSubmitting, error: error ?? submitError };
+  return { exercise: data, submit, isLoading, isSubmitting, error: error ?? submitError, isEmpty: errorCode === 'NO_EXERCISES' };
 }
 
 /**

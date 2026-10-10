@@ -11,8 +11,8 @@ import type { EnrolledCourse, StudentSubtopic } from './course';
  * Describes a subtopic with the mastery and answer counts of the student.
  */
 export interface SubtopicProgress extends StudentSubtopic {
-  /** Answers the student got right in the subtopic. */
-  correctCount: number;
+  /** Correct answers; null when the API only supplies the total solved count. */
+  correctCount: number | null;
   /** Answers the student submitted in the subtopic. */
   attemptCount: number;
 }
@@ -35,6 +35,8 @@ export interface FocusRecommendation {
  * Describes the progress of the student in one enrolled course.
  */
 export interface CourseProgress {
+  /** Whether the API reports submitted answers for this course. */
+  hasActivity: boolean;
   /** Course of the progress. */
   course: EnrolledCourse;
   /** Subtopics ordered from the highest to the lowest mastery. */

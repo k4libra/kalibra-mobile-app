@@ -26,7 +26,7 @@ export function ProfileScreen() {
         <ProfileSummary user={profile.user} stats={profile.stats} avatar={student?.avatar} />
         <View style={styles.preferences}><Text variant="title" isHeading>Preferencias académicas</Text><Card style={styles.rows}>
           <PreferenceRow title="Modo nocturno" description="Optimizado para sesiones de estudio tarde" icon="dark_mode" value={profile.preferences.darkMode} disabled={state.isSubmitting} onValueChange={state.setDarkMode} />
-          <PreferenceRow title="Recordatorios diarios" description={profile.preferences.dailyReminders ? 'Notificaciones a las 19:00 hrs' : 'Notificaciones desactivadas'} icon="alarm" tone="success" value={profile.preferences.dailyReminders} disabled={state.isSubmitting} onValueChange={state.setDailyReminders} />
+          <PreferenceRow title="Recordatorios diarios" description={profile.preferences.dailyReminders ? 'Recordatorios activados' : 'Notificaciones desactivadas'} icon="alarm" tone="success" value={profile.preferences.dailyReminders} disabled={state.isSubmitting} onValueChange={state.setDailyReminders} />
         </Card></View>
         <View style={styles.logout}><Button label="Cerrar sesión" icon="logout" iconPosition="start" variant="danger-soft" onPress={state.requestSignOut} /></View>
       </>}

@@ -10,8 +10,8 @@ import ReactTestRenderer from 'react-test-renderer';
 import { AuthProvider } from '@/context/AuthContext';
 import { useAuth } from '@/hooks/useAuth';
 import { authService } from '@/services/auth.service';
-import { DEMO_CREDENTIALS, MOCK_AUTH_USER } from '@/mocks/auth.mock';
-const session = { user: MOCK_AUTH_USER, accessToken: 'mock-test' };
+import { TEST_CREDENTIALS, TEST_USER } from '@/test/apiFixtures';
+const session = { user: TEST_USER };
 let tree: ReactTestRenderer.ReactTestRenderer;
 let value: ReturnType<typeof useAuth>;
 function Probe() { value = useAuth(); return null; }
@@ -21,14 +21,14 @@ afterEach(() => { ReactTestRenderer.act(() => tree?.unmount()); jest.restoreAllM
 test('restores signed-out state and publishes a successful sign-in', async () => {
   jest.spyOn(authService, 'signIn').mockResolvedValue(session);
   await render(); expect(value.isAuthenticated).toBe(false);
-  await ReactTestRenderer.act(async () => { await value.signIn(DEMO_CREDENTIALS); });
+  await ReactTestRenderer.act(async () => { await value.signIn(TEST_CREDENTIALS); });
   expect(value.session).toEqual(session);
   expect(value.isSubmitting).toBe(false);
 });
 test('normalizes failures without changing the session', async () => {
   jest.spyOn(authService, 'signIn').mockRejectedValue(Object.assign(new Error('failure'), { code: 'INVALID_CREDENTIALS' }));
   await render();
-  await ReactTestRenderer.act(async () => { await value.signIn(DEMO_CREDENTIALS); });
+  await ReactTestRenderer.act(async () => { await value.signIn(TEST_CREDENTIALS); });
   expect(value.error?.code).toBe('INVALID_CREDENTIALS'); expect(value.session).toBeNull();
 });
 test('removes the protected session before a delayed sign-out completes', async () => {
@@ -46,7 +46,7 @@ test('ignores authentication that finishes after its owner unmounts', async () =
   jest.spyOn(authService, 'signIn').mockImplementation(() => new Promise(done => { resolve = done; }));
   await render();
   let pending!: ReturnType<typeof value.signIn>;
-  ReactTestRenderer.act(() => { pending = value.signIn(DEMO_CREDENTIALS); });
+  ReactTestRenderer.act(() => { pending = value.signIn(TEST_CREDENTIALS); });
   ReactTestRenderer.act(() => tree.unmount());
   resolve(session); expect(await pending).toBeNull();
 });

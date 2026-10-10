@@ -30,7 +30,7 @@ export interface SignInCredentials {
   email: string;
   /** Password provided by the user. */
   password: string;
-  /** Future persistence preference; the mock remains in memory. */
+  /** UI preference; cookie persistence is controlled by the API. */
   rememberDevice: boolean;
 }
 /** Data submitted to register a student. */
@@ -42,12 +42,10 @@ export interface SignUpData {
   /** Password with at least eight characters, letters and numbers. */
   password: string;
 }
-/** Authenticated account and its mock session identifier. */
+/** Public identity of the cookie-authenticated account. */
 export interface AuthSession {
   /** Signed-in account. */
   user: AuthUser;
-  /** Local placeholder token; never a real credential. */
-  accessToken: string;
 }
 /** Aggregate academic statistics of the current account. */
 export interface ProfileStats {
@@ -75,7 +73,7 @@ export interface StudentProfile {
   preferences: ProfilePreferences;
 }
 /** Domain failure codes used by authentication actions. */
-export type AuthErrorCode = 'INVALID_EMAIL' | 'EMAIL_ALREADY_REGISTERED' | 'INVALID_CREDENTIALS' | 'INVALID_PASSWORD' | 'REQUIRED_FIELD' | 'UNAUTHORIZED' | 'UNKNOWN_ERROR';
+export type AuthErrorCode = 'INVALID_EMAIL' | 'EMAIL_ALREADY_REGISTERED' | 'INVALID_CREDENTIALS' | 'INVALID_PASSWORD' | 'REQUIRED_FIELD' | 'UNAUTHORIZED' | 'MOBILE_ACCESS_DENIED' | 'FORBIDDEN' | 'NOT_FOUND' | 'NO_EXERCISES' | 'CONFLICT' | 'SERVICE_UNAVAILABLE' | 'NETWORK_ERROR' | 'UNKNOWN_ERROR';
 /** Normalized authentication failure exposed to the UI. */
 export interface AuthError {
   /** Machine-readable reason. */
@@ -83,7 +81,7 @@ export interface AuthError {
   /** Spanish message shown to the user. */
   message: string;
 }
-/** Result of ending a mock session. */
+/** Result of ending a session. */
 export interface SignOutResult {
   /** Whether the session was removed. */
   success: boolean;
@@ -102,7 +100,7 @@ export interface AuthFieldErrors {
 export interface StudyPreviewData {
   /** Reference illustration bundled locally. */
   image: ImageSourcePropType;
-  /** Recommendation description from mock study data. */
+  /** Static study recommendation. */
   description: string;
   /** Subjects offered by the personalized study plan. */
   planDescription: string;

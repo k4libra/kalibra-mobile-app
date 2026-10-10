@@ -1,5 +1,5 @@
 /**
- * Minimal shared mock session state and startup restoration.
+ * Shared cookie session state and startup restoration.
  *
  * @author MRamirez202210582
  * @packageDocumentation
@@ -7,6 +7,7 @@
 
 import React, { createContext, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { authService } from '@/services/auth.service';
+import { subscribeSession } from '@/services/http/session';
 import type { AuthSession } from '@/types/auth';
 /** Session state consumed by the navigation guard and account-bound hooks. */
 export interface AuthContextValue {
@@ -24,7 +25,7 @@ export interface AuthProviderProps {
   /** Application subtree that requires session state. */
   children: ReactNode;
 }
-/** Provides the mock session and restores it once at application startup. */
+/** Provides the cookie session and restores it once at application startup. */
 export function AuthProvider({ children }: AuthProviderProps) {
   const [session, publish] = useState<AuthSession | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -34,6 +35,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
     publish(next);
     setIsLoading(false);
   }, []);
+  useEffect(() => {
+    const unsubscribe = subscribeSession(next => {
+      if (next === null) setSession(null);
+    });
+    return unsubscribe;
+  }, [setSession]);
   useEffect(() => {
     let mounted = true;
     const request = generation.current;

@@ -27,7 +27,7 @@ export function ProgressScreen() {
   const { student } = useCurrentStudent();
   const { courses, selectedCourseId, selectCourse, progress, isLoading, error } = useProgress();
   const [isInitialPreview, setIsInitialPreview] = useState(false);
-  const hasActivity = Boolean(progress && progress.course.mastery !== null) && !isInitialPreview;
+  const hasActivity = Boolean(progress && progress.hasActivity) && !isInitialPreview;
 
   const practice = (subtopicId: string) => {
     if (selectedCourseId) navigation.navigate('Exercise', { courseId: selectedCourseId, subtopicId });
@@ -46,7 +46,7 @@ export function ProgressScreen() {
       <View style={styles.heading}>
         <View style={styles.row}>
           <Chip label="PANEL ANALÍTICO" />
-          {progress && progress.course.mastery !== null && (
+          {progress && progress.hasActivity && (
             <PreviewToggle
               label={isInitialPreview ? 'Ver mi progreso' : 'Ver vista inicial'}
               onPress={() => setIsInitialPreview(value => !value)}

@@ -59,12 +59,12 @@ export interface PracticeExercise {
   levelLabel: string;
   /** Adaptive difficulty label, for example `Dificultad adaptativa: Nivel 2`. */
   difficultyLabel: string;
-  /** Position of the exercise in the session, starting at 1. */
-  position: number;
-  /** Exercises in the session. */
-  sessionSize: number;
-  /** Points earned in the session so far. */
-  sessionPoints: number;
+  /** Position in a session, or null when the API does not report sessions. */
+  position: number | null;
+  /** Session size, or null when the API does not report sessions. */
+  sessionSize: number | null;
+  /** Session points, or null when not supplied by the API. */
+  sessionPoints: number | null;
   /** Time spent in the session, for example `01:42`. */
   elapsed: string;
   /** Statement before the code. */
@@ -101,8 +101,8 @@ export interface ExplanationStep {
 export interface PracticeResult {
   /** Identifier of the recorded answer. */
   attemptId: string;
-  /** Exercise answered. */
-  exerciseId: string;
+  /** Exercise identifier; null when recovering a history entry without it. */
+  exerciseId: string | null;
   /** Course of the exercise. */
   courseId: string;
   /** Subtopic of the exercise. */
@@ -116,11 +116,13 @@ export interface PracticeResult {
   /** Change of the subtopic mastery in points; `0` when it did not change. */
   masteryDelta: number;
   /** Position of the exercise in the session. */
-  position: number;
-  /** Exercises in the session. */
-  sessionSize: number;
+  position: number | null;
+  /** Session size, or null when the API does not report sessions. */
+  sessionSize: number | null;
   /** Results of the previous exercises of the session, in order. */
   sessionOutcomes: boolean[];
+  /** Full explanation from the server, without synthesized steps. */
+  explanation: string;
   /** Short label of the explanation, for example `Pila LIFO`. */
   explanationTag: string;
   /** Steps of the explanation. */

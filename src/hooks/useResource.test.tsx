@@ -6,7 +6,8 @@
  */
 
 import { authService } from '@/services/auth.service';
-import { DEMO_CREDENTIALS, resetAuthMock } from '@/mocks/auth.mock';
+import { TEST_CREDENTIALS } from '@/test/apiFixtures';
+import { resetApiStub } from '@/test/fetchStub';
 import React from 'react';
 import ReactTestRenderer from 'react-test-renderer';
 import { useCurrentStudent } from './useCurrentStudent';
@@ -28,8 +29,8 @@ const flush = () => ReactTestRenderer.act(() => new Promise<void>(resolve => set
 
 
 beforeEach(async () => {
-  resetAuthMock();
-  await authService.signIn(DEMO_CREDENTIALS);
+  resetApiStub();
+  await authService.signIn(TEST_CREDENTIALS);
 });
 
 describe('useResource', () => {

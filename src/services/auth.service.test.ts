@@ -1,5 +1,5 @@
 /**
- * Behavior tests for authentication and account-scoped simulated endpoints.
+ * Tests the HTTP integration behavior of the student app.
  *
  * @author G0nz4loQu3dena
  * @packageDocumentation
@@ -7,67 +7,61 @@
 
 import { authService } from '@/services/auth.service';
 import { coursesService } from '@/services/courses.service';
-import { invitationsService } from '@/services/invitations.service';
-import { practiceService } from '@/services/practice.service';
-import { DEMO_CREDENTIALS, resetAuthMock } from '@/mocks/auth.mock';
-import * as scenario from '@/mocks/scenario';
-jest.useFakeTimers();
-async function settle<T>(request: Promise<T>): Promise<T> { jest.runAllTimers(); return request; }
-const newAccount = { fullName: 'Student Example', email: 'student@campus.edu.pe', password: 'Example2025!' };
-beforeEach(resetAuthMock);
-afterEach(() => { jest.restoreAllMocks(); jest.clearAllTimers(); });
-test('starts signed out and restores a successful demo session', async () => {
-  expect(await settle(authService.getCurrentSession())).toBeNull();
-  const session = await settle(authService.signIn({ ...DEMO_CREDENTIALS, email: `  ${DEMO_CREDENTIALS.email.toUpperCase()}  ` }));
-  expect(await settle(authService.getCurrentSession())).toEqual(session);
-  expect((await settle(authService.getProfile())).stats).toEqual({ solvedExerciseCount: 77, averageMastery: 71, activeCourseCount: 3 });
+import { TEST_CREDENTIALS, TEST_USER } from '@/test/apiFixtures';
+import { jsonResponse, resetApiStub } from '@/test/fetchStub';
+import { getSession } from '@/services/http/session';
+import { API_BASE_URL } from '@/config/api';
+let fetchSpy: ReturnType<typeof resetApiStub>;
+const newAccount = { fullName: 'Student Example', email: 'estudiante.test4@upc.edu.pe', password: 'Example2025!' };
+beforeEach(() => { fetchSpy = resetApiStub(); });
+afterEach(() => jest.restoreAllMocks());
+test('restores the cookie session and derives profile totals from course history and mastery', async () => {
+  expect(await authService.getCurrentSession()).toBeNull();
+  const session = await authService.signIn({ ...TEST_CREDENTIALS, email: ` ${TEST_CREDENTIALS.email.toUpperCase()} ` });
+  expect(session.user).toEqual(TEST_USER);
+  expect(await authService.getCurrentSession()).toEqual(session);
+  expect((await authService.getProfile()).stats).toEqual({ solvedExerciseCount: 3, averageMastery: 67, activeCourseCount: 3 });
+  expect(fetchSpy).toHaveBeenCalledWith(`${API_BASE_URL}/authentication/sign-in`, expect.objectContaining({
+    method: 'POST', body: JSON.stringify({ email: TEST_CREDENTIALS.email, password: TEST_CREDENTIALS.password, application: 'MOBILE_APP' }), credentials: 'include',
+  }));
 });
-test('rejects invalid credentials and a duplicate institutional address', async () => {
-  await expect(settle(authService.signIn({ ...DEMO_CREDENTIALS, password: 'wrong' }))).rejects.toMatchObject({ code: 'INVALID_CREDENTIALS' });
-  await expect(settle(authService.signUp({ ...newAccount, email: DEMO_CREDENTIALS.email }))).rejects.toMatchObject({ code: 'EMAIL_ALREADY_REGISTERED' });
+test('registers with names and the mobile application then signs in to obtain the cookie', async () => {
+  await authService.signUp(newAccount);
+  expect(fetchSpy).toHaveBeenCalledWith(`${API_BASE_URL}/authentication/sign-up`, expect.objectContaining({ body: JSON.stringify({ firstName: 'Student', lastName: 'Example', email: newAccount.email, password: newAccount.password, application: 'MOBILE_APP' }) }));
+  expect((await authService.getProfile()).stats).toEqual({ solvedExerciseCount: 0, averageMastery: null, activeCourseCount: 0 });
+  expect(await coursesService.listCourses()).toEqual([]);
 });
-test('rejects malformed registration fields', async () => {
-  await expect(settle(authService.signUp({ ...newAccount, email: 'student@gmail.com' }))).rejects.toMatchObject({ code: 'INVALID_EMAIL' });
-  await expect(settle(authService.signUp({ ...newAccount, password: 'short' }))).rejects.toMatchObject({ code: 'INVALID_PASSWORD' });
-  await expect(settle(authService.signUp({ ...newAccount, fullName: ' ' }))).rejects.toMatchObject({ code: 'REQUIRED_FIELD' });
+test('maps invalid credentials, duplicate email and forbidden mobile access', async () => {
+  await expect(authService.signIn({ ...TEST_CREDENTIALS, password: 'wrong' })).rejects.toMatchObject({ code: 'INVALID_CREDENTIALS' });
+  await expect(authService.signUp({ ...newAccount, email: TEST_CREDENTIALS.email })).rejects.toMatchObject({ code: 'EMAIL_ALREADY_REGISTERED' });
+  fetchSpy.mockResolvedValueOnce(jsonResponse({ status: 403, detail: 'Not a student' }, 403));
+  await expect(authService.signIn(TEST_CREDENTIALS)).rejects.toMatchObject({ code: 'MOBILE_ACCESS_DENIED', message: 'Esta cuenta no tiene acceso a la app móvil' });
 });
-test('registers an isolated account with zero totals and no demo academic data', async () => {
-  await settle(authService.signUp(newAccount));
-  expect((await settle(authService.getProfile())).stats).toEqual({ solvedExerciseCount: 0, averageMastery: null, activeCourseCount: 0 });
-  expect((await settle(coursesService.getStudent())).firstName).toBe('Student');
-  expect(await settle(coursesService.listCourses())).toEqual([]);
-  expect(await settle(invitationsService.listInvitations())).toEqual([]);
-  await expect(coursesService.getCourse('course-1')).rejects.toThrow();
-  await expect(practiceService.getResult('ex-sub-1:opt-a')).rejects.toThrow();
+test('rejects invalid registration before sending any request', async () => {
+  await expect(authService.signUp({ ...newAccount, email: 'student@gmail.com' })).rejects.toMatchObject({ code: 'INVALID_EMAIL' });
+  await expect(authService.signUp({ ...newAccount, password: 'short' })).rejects.toMatchObject({ code: 'INVALID_PASSWORD' });
+  await expect(authService.signUp({ ...newAccount, fullName: ' ' })).rejects.toMatchObject({ code: 'REQUIRED_FIELD' });
+  expect(fetchSpy).not.toHaveBeenCalled();
 });
-test('keeps preferences independent across logout and account changes', async () => {
-  await settle(authService.signIn(DEMO_CREDENTIALS));
-  await settle(authService.updatePreferences({ darkMode: true, dailyReminders: false }));
-  await settle(authService.signOut());
-  await settle(authService.signUp(newAccount));
-  expect((await settle(authService.getProfile())).preferences).toEqual({ darkMode: false, dailyReminders: true });
-  await settle(authService.signOut());
-  await settle(authService.signIn(DEMO_CREDENTIALS));
-  expect((await settle(authService.getProfile())).preferences).toEqual({ darkMode: true, dailyReminders: false });
+test('persists preferences by account and uses the default reminder time only when unset', async () => {
+  await authService.signIn(TEST_CREDENTIALS);
+  await authService.updatePreferences({ darkMode: true, dailyReminders: true });
+  expect(fetchSpy).toHaveBeenCalledWith(`${API_BASE_URL}/student-preferences/me/daily-reminder`, expect.objectContaining({ method: 'PUT', body: JSON.stringify({ enabled: true, time: '20:00:00' }) }));
+  await authService.signOut();
+  expect(getSession()).toBeNull();
+  await authService.signUp(newAccount);
+  expect((await authService.getProfile()).preferences.darkMode).toBe(false);
+  await authService.signOut();
+  await authService.signIn(TEST_CREDENTIALS);
+  expect((await authService.getProfile()).preferences.darkMode).toBe(true);
 });
-test('discards a preference request that completes after logout', async () => {
-  await settle(authService.signIn(DEMO_CREDENTIALS));
-  const pending = authService.updatePreferences({ darkMode: true });
+test('does not publish a sign-in that finishes after sign-out', async () => {
+  let resolve!: (response: Response) => void;
+  fetchSpy.mockImplementationOnce(() => new Promise(done => { resolve = done; }));
+  const pending = authService.signIn(TEST_CREDENTIALS);
   const outcome = pending.catch(reason => reason);
-  await settle(authService.signOut());
+  await authService.signOut();
+  resolve(jsonResponse({ id: TEST_USER.id, email: TEST_USER.email, firstName: 'Estudiante', lastName: 'Test Uno', roles: ['STUDENT'] }));
   expect(await outcome).toMatchObject({ code: 'UNAUTHORIZED' });
-});
-test('cannot restore an obsolete sign-in after logout', async () => {
-  const pending = authService.signIn(DEMO_CREDENTIALS);
-  const outcome = pending.catch(reason => reason);
-  await settle(authService.signOut());
-  expect(await outcome).toMatchObject({ code: 'UNAUTHORIZED' });
-  expect(await settle(authService.getCurrentSession())).toBeNull();
-});
-test('honors the shared empty scenario for the authenticated demo', async () => {
-  jest.spyOn(scenario, 'isEmptyScenario').mockReturnValue(true);
-  await settle(authService.signIn(DEMO_CREDENTIALS));
-  expect(await settle(coursesService.listCourses())).toEqual([]);
-  expect((await settle(authService.getProfile())).stats.solvedExerciseCount).toBe(0);
-  expect((await settle(coursesService.getStudent())).averageMastery).toBe(0);
+  expect(getSession()).toBeNull();
 });

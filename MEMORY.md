@@ -1,27 +1,37 @@
 # MEMORY.md - Kalibra Mobile App
 
-Inter-session project memory. Keep this file concise (about ~50 lines); remove stale details.
+Inter-session project memory. Keep this file concise (about ~50 lines).
 
 ## Current status (2026-10-10)
-- `feature/ui-integration` holds every student feature: auth, profile, courses/enrollment, adaptive practice, progress and history. UI only with mock services; no API.
-- The app starts at SignIn; the demo account is documented in README. `docs/ui-integration-audit.md` records the partner-branch audit.
-- US-024 dark mode is partial: the profile toggle persists the preference but no dark palette exists yet.
+- `feature/api-integration` replaces production mocks with real HTTP services for all student screens.
+- Auth uses native `token` cookies with credentials included; no JWT is stored in JavaScript.
+- Generic typed fixtures and a fetch stub live only in `src/test`; production has no mock scenario.
+- TypeScript and all 113 tests pass; ESLint has no errors (two existing MasteryRing inline-style warnings).
+- Frontend audit has no errors; layer README warnings are expected by the user rule. StudentData is tested through service pagination tests.
+- Local API source still lacks contract-v2 `/users/me`, `/students/me/courses` and user names; live end-to-end/native verification awaits those backend changes.
+- Commits remain pending: this environment exposes .git read-only; git add/commit fail creating index.lock. No staging or push was performed.
+- US-024 dark mode persists the preference through HTTP; the dark palette remains pending.
 
 ## Decisions (and why)
-- Same token names as kalibra-web-app (`theme/tokens.ts` mirrors web `@theme`).
-- Fonts linked natively (`react-native.config.js` + `npx react-native-asset`); file names equal PostScript names.
-- Answers are submitted from the exercise screen; the result screen reads it by `attemptId` (no double submission).
-- Exercises and subtopics are generic data; the mock reuses one sample exercise labelled per subtopic.
-- `MOCK_SCENARIO` in `src/mocks/scenario.ts` switches to empty states.
-- Progress and history mocks derive from `COURSES`/`SUBTOPICS`; history attempt ids use the practice format `ex-<subtopicId>:<optionId>` so "Ver desglose" opens ExerciseResult.
-- README.md only in empty layer folders (user rule), so the ARCH-05 audit warning is expected.
+- Screens -> hooks/useResource -> contract services -> one fetch client; no added native dependency.
+- Android emulator uses 10.0.2.2:8080; iOS simulator uses localhost:8080. HTTP is allowed only for these Android debug hosts.
+- Registration sends MOBILE_APP and splits the existing full-name field into firstName (first term) and lastName (remainder); sign-in after registration obtains the cookie.
+- Protected 401 responses clear AuthContext; session generations prevent obsolete requests from publishing identity or cached results.
+- Practice submits A-D keys once per action; results use an account-scoped attemptId cache and recover from paginated history when uncached.
+- History loads every page per enrolled course, requests server outcome filters and counts each course's global totals once.
+- Exact percentages come from student-progress; qualitative levels never become invented percentages. hasActivity controls the initial state.
+- Missing faculty/term, duration, hints, code, session scores and estimated time are omitted. Server explanations are preserved without synthesized steps.
+- Reminder time is preserved; enabling with no prior time sends 20:00:00 UTC, as required by the API.
+- Read-only data refreshes when navigation regains focus; practice generation is excluded to avoid unintended POST requests.
+- Same token names as kalibra-web-app; README.md only in empty layer folders except the explicitly requested root README.
 
-## Lessons learned and mistakes to avoid
-- iOS 27 simulator crashes on launch (UIScene lifecycle required by iOS 27, RN 0.87 template lacks it). Use iOS 26.x simulator.
-- TypeScript 6: `baseUrl` is deprecated; alias `@/` uses only `paths`.
-- Jest: use fake timers and unmount navigation trees, otherwise timers fire after teardown.
+## Pitfalls to avoid
+- Local API requires KALIBRA_SEED_GENERIC_USERS=true and JWT_COOKIE_SECURE=false for HTTP simulator sessions; never commit .env.
+- Do not modify kalibra-api or kalibra-adaptive-engine from this task.
+- iOS 27 requires UIScene; use iOS 26.x until AppDelegate adopts it.
+- TypeScript 6: alias @/ uses paths without deprecated baseUrl.
+- Jest: unmount navigation trees and flush timers to prevent work after teardown.
 
 ## Next steps
-- Replace mocks with HTTP services behind the same contracts.
-- Add a dark palette for US-024.
-- Adopt UIScene in `AppDelegate.swift` before testing on iOS 27.
+- Validate native cookies and live flows once contract v2 is available in the API.
+- Add a dark palette for US-024 and adopt UIScene for iOS 27.

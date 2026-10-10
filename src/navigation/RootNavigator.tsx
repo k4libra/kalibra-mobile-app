@@ -70,7 +70,7 @@ export function RootNavigator() {
     }
 
     return (
-        <Stack.Navigator key={session?.accessToken ?? 'signed-out'} screenOptions={{ headerShown: false }}>
+        <Stack.Navigator key={session?.user.id ?? 'signed-out'} screenOptions={{ headerShown: false }}>
             {isAuthenticated ? (
                 <>
                     <Stack.Screen name="Tabs" component={MainTabs} />

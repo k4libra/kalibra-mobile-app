@@ -1,5 +1,5 @@
 /**
- * Contract of the student courses endpoints, shared by the real and the simulated service.
+ * Contract of the student courses endpoints, implemented by the HTTP service.
  *
  * @author G0nz4loQu3dena
  * @packageDocumentation

@@ -23,6 +23,7 @@ export function useCourseSubtopics(courseId: string) {
   const { data, isLoading, error } = useResource(
     () => Promise.all([coursesService.getCourse(courseId), coursesService.listSubtopics(courseId)]),
     `subtopics-${courseId}`,
+    true,
   );
   return { course: data?.[0] ?? null, subtopics: data?.[1] ?? [], isLoading, error };
 }
