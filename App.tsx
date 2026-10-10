@@ -10,6 +10,7 @@ import { StatusBar } from 'react-native';
 import { DefaultTheme, NavigationContainer, type Theme } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { RootNavigator } from '@/navigation/RootNavigator';
+import { AuthProvider } from '@/context/AuthContext';
 import { colors } from '@/theme/tokens';
 
 // Navigation theme aligned with the design system surfaces.
@@ -22,12 +23,15 @@ const NAVIGATION_THEME: Theme = {
  * Mounts the safe area provider, the navigation container and the root navigator.
  */
 export default function App() {
-  return (
-    <SafeAreaProvider>
-      <StatusBar barStyle="dark-content" />
-      <NavigationContainer theme={NAVIGATION_THEME}>
-        <RootNavigator />
-      </NavigationContainer>
-    </SafeAreaProvider>
-  );
+    return (
+        <SafeAreaProvider>
+            <AuthProvider>
+                <StatusBar barStyle="dark-content" />
+
+                <NavigationContainer theme={NAVIGATION_THEME}>
+                    <RootNavigator />
+                </NavigationContainer>
+            </AuthProvider>
+        </SafeAreaProvider>
+    );
 }

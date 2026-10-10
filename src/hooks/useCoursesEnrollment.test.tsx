@@ -5,6 +5,8 @@
  * @packageDocumentation
  */
 
+import { authService } from '@/services/auth.service';
+import { DEMO_CREDENTIALS, resetAuthMock } from '@/mocks/auth.mock';
 import React from 'react';
 import ReactTestRenderer from 'react-test-renderer';
 import { useCourseSubtopics } from './useCourseSubtopics';
@@ -27,6 +29,14 @@ async function renderHook<T>(hook: () => T): Promise<() => T> {
   });
   return () => value;
 }
+
+
+beforeEach(async () => {
+  resetAuthMock();
+  const request = authService.signIn(DEMO_CREDENTIALS);
+  jest.runAllTimers();
+  await request;
+});
 
 describe('useMyCourses', () => {
   it('exposes the student and the enrolled courses', async () => {

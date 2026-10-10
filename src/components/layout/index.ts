@@ -9,3 +9,5 @@ export { AppHeader, type AppHeaderProps } from './AppHeader';
 export { BackLink, type BackLinkProps } from './BackLink';
 export { BottomTabBar } from './BottomTabBar';
 export { ScreenContainer, type ScreenContainerProps } from './ScreenContainer';
+export { AuthLayout, type AuthLayoutProps } from './AuthLayout';
+export { BrandMark } from './BrandMark';

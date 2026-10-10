@@ -10,7 +10,8 @@
 
 import type { CoursesContract } from '@/services/courses.contract';
 import type { EnrolledCourse, Student, StudentSubtopic } from '@/types/course';
-import { isEmptyScenario, respond } from './scenario';
+import { isEmptyScenario, respond } from '@/mocks/scenario';
+import { getMockSession, hasDemoSession } from '@/mocks/session.mock';
 
 /**
  * Sample signed-in student.
@@ -56,11 +57,18 @@ export const SUBTOPICS: StudentSubtopic[] = [
  * Simulated implementation of {@link CoursesContract}.
  */
 export const coursesMock: CoursesContract = {
-  getStudent: () => respond(isEmptyScenario() ? { ...STUDENT, solvedExerciseCount: 0, pendingInvitationCount: 1 } : STUDENT),
-  listCourses: () => respond(isEmptyScenario() ? [] : COURSES),
+  getStudent: () => {
+    const session = getMockSession();
+    if (!session) return Promise.reject(new Error('No active student session.'));
+    const hasActivity = hasDemoSession() && !isEmptyScenario();
+    return respond({ ...STUDENT, firstName: session.user.fullName.split(/\s+/)[0], avatar: hasDemoSession() ? STUDENT.avatar : undefined,
+      solvedExerciseCount: hasActivity ? STUDENT.solvedExerciseCount : 0, averageMastery: hasActivity ? STUDENT.averageMastery : 0,
+      pendingInvitationCount: hasDemoSession() ? STUDENT.pendingInvitationCount : 0 });
+  },
+  listCourses: () => respond(hasDemoSession() && !isEmptyScenario() ? COURSES : []),
   getCourse: courseId => {
-    const course = COURSES.find(item => item.id === courseId);
+    const course = hasDemoSession() ? COURSES.find(item => item.id === courseId) : undefined;
     return course ? respond(course) : Promise.reject(new Error(`Course ${courseId} not found`));
   },
-  listSubtopics: courseId => respond(SUBTOPICS.filter(item => item.courseId === courseId)),
+  listSubtopics: courseId => hasDemoSession() ? respond(SUBTOPICS.filter(item => item.courseId === courseId)) : Promise.reject(new Error('Course not enrolled.')),
 };

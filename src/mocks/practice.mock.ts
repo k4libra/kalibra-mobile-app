@@ -12,7 +12,8 @@
 import type { PracticeContract } from '@/services/practice.contract';
 import type { PracticeExercise, PracticeResult } from '@/types/exercise';
 import { COURSES, SUBTOPICS } from './courses.mock';
-import { respond } from './scenario';
+import { respond } from '@/mocks/scenario';
+import { hasDemoSession } from '@/mocks/session.mock';
 
 // Option that answers the sample exercise correctly.
 const CORRECT_OPTION_ID = 'opt-a';
@@ -101,10 +102,10 @@ export function sampleResult(exerciseId: string, optionId: string): PracticeResu
  * Simulated implementation of {@link PracticeContract}.
  */
 export const practiceMock: PracticeContract = {
-  getNextExercise: (courseId, subtopicId) => respond(sampleExercise(courseId, subtopicId)),
-  submitAnswer: (exerciseId, optionId) => respond(sampleResult(exerciseId, optionId)),
+  getNextExercise: (courseId, subtopicId) => hasDemoSession() && SUBTOPICS.some(item => item.id === subtopicId && item.courseId === courseId) ? respond(sampleExercise(courseId, subtopicId)) : Promise.reject(new Error('Subtopic not enrolled.')),
+  submitAnswer: (exerciseId, optionId) => hasDemoSession() ? respond(sampleResult(exerciseId, optionId)) : Promise.reject(new Error('No practice activity for this account.')),
   getResult: attemptId => {
     const [exerciseId, optionId] = attemptId.split(':');
-    return optionId ? respond(sampleResult(exerciseId, optionId)) : Promise.reject(new Error(`Attempt ${attemptId} not found`));
+    return hasDemoSession() && optionId ? respond(sampleResult(exerciseId, optionId)) : Promise.reject(new Error(`Attempt ${attemptId} not found`));
   },
 };

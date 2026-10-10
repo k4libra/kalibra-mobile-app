@@ -5,7 +5,15 @@
  * @packageDocumentation
  */
 
+import { authService } from '@/services/auth.service';
+import { DEMO_CREDENTIALS, resetAuthMock } from '@/mocks/auth.mock';
 import { practiceService } from './practice.service';
+
+
+beforeEach(async () => {
+  resetAuthMock();
+  await authService.signIn(DEMO_CREDENTIALS);
+});
 
 describe('practiceService', () => {
   it('labels the exercise with the requested subtopic', async () => {
