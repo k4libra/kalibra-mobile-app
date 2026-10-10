@@ -6,7 +6,8 @@
  */
 
 import { authService } from '@/services/auth.service';
-import { DEMO_CREDENTIALS, resetAuthMock } from '@/mocks/auth.mock';
+import { TEST_CREDENTIALS } from '@/test/apiFixtures';
+import { resetApiStub } from '@/test/fetchStub';
 import React from 'react';
 import ReactTestRenderer from 'react-test-renderer';
 import { InvitationsScreen } from '@/screens/InvitationsScreen';
@@ -34,8 +35,8 @@ const pressButton = (root: ReactTestRenderer.ReactTestInstance, label: string) =
 
 
 beforeEach(async () => {
-  resetAuthMock();
-  const request = authService.signIn(DEMO_CREDENTIALS);
+  resetApiStub();
+  const request = authService.signIn(TEST_CREDENTIALS);
   jest.runAllTimers();
   await request;
 });

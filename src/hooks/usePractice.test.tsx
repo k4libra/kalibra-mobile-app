@@ -6,7 +6,8 @@
  */
 
 import { authService } from '@/services/auth.service';
-import { DEMO_CREDENTIALS, resetAuthMock } from '@/mocks/auth.mock';
+import { TEST_CREDENTIALS } from '@/test/apiFixtures';
+import { resetApiStub } from '@/test/fetchStub';
 import React from 'react';
 import ReactTestRenderer from 'react-test-renderer';
 import { useExercise, usePracticeResult } from './usePractice';
@@ -30,8 +31,8 @@ async function renderHook<T>(hook: () => T): Promise<() => T> {
 
 
 beforeEach(async () => {
-  resetAuthMock();
-  const request = authService.signIn(DEMO_CREDENTIALS);
+  resetApiStub();
+  const request = authService.signIn(TEST_CREDENTIALS);
   jest.runAllTimers();
   await request;
 });
@@ -53,7 +54,7 @@ describe('useExercise', () => {
 
 describe('usePracticeResult', () => {
   it('loads a recorded result', async () => {
-    const result = await renderHook(() => usePracticeResult('ex-sub-1:opt-c'));
+    const result = await renderHook(() => usePracticeResult('attempt-2'));
     expect(result().result?.isCorrect).toBe(false);
   });
 });

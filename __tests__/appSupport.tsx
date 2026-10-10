@@ -8,7 +8,8 @@
 import React from 'react';
 import ReactTestRenderer from 'react-test-renderer';
 import App from '../App';
-import { DEMO_CREDENTIALS, resetAuthMock } from '@/mocks/auth.mock';
+import { TEST_CREDENTIALS } from '@/test/apiFixtures';
+import { resetApiStub } from '@/test/fetchStub';
 type Instance = ReactTestRenderer.ReactTestInstance;
 // Native stacks retain inactive forms; tests interact only with the focused route.
 function isActive(node: Instance): boolean {
@@ -19,7 +20,7 @@ function isActive(node: Instance): boolean {
   }
   return true;
 }
-/** Flushes mock endpoint and navigation timers. */
+/** Flushes HTTP promises and navigation timers. */
 export async function flush(): Promise<void> {
   await ReactTestRenderer.act(async () => { jest.runAllTimers(); });
 }
@@ -40,18 +41,18 @@ export async function type(root: Instance, label: string, value: string): Promis
 export function hasText(root: Instance, text: string): boolean {
   return root.findAll(node => String(node.type) === 'Text' && [node.props.children].flat().join('') === text).length > 0;
 }
-/** Renders the signed-out application with independent mock accounts. */
+/** Renders the signed-out application with independent generic HTTP fixtures. */
 export async function renderApp(): Promise<ReactTestRenderer.ReactTestRenderer> {
-  resetAuthMock();
+  resetApiStub();
   let tree: ReactTestRenderer.ReactTestRenderer | undefined;
   await ReactTestRenderer.act(async () => { tree = ReactTestRenderer.create(<App />); });
   await flush(); await flush();
   return tree!;
 }
-/** Authenticates the reference demo account through the sign-in form. */
+/** Authenticates the generic student account through the sign-in form. */
 export async function signInDemo(root: Instance): Promise<void> {
-  await type(root, 'Correo universitario', DEMO_CREDENTIALS.email);
-  await type(root, 'Contraseña', DEMO_CREDENTIALS.password);
+  await type(root, 'Correo universitario', TEST_CREDENTIALS.email);
+  await type(root, 'Contraseña', TEST_CREDENTIALS.password);
   await press(root, 'Iniciar sesión');
 }
 /** Unmounts the renderer and clears delayed navigation work. */

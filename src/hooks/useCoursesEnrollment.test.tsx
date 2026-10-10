@@ -5,8 +5,10 @@
  * @packageDocumentation
  */
 
+import { invitationsService } from '@/services/invitations.service';
 import { authService } from '@/services/auth.service';
-import { DEMO_CREDENTIALS, resetAuthMock } from '@/mocks/auth.mock';
+import { TEST_CREDENTIALS } from '@/test/apiFixtures';
+import { resetApiStub } from '@/test/fetchStub';
 import React from 'react';
 import ReactTestRenderer from 'react-test-renderer';
 import { useCourseSubtopics } from './useCourseSubtopics';
@@ -32,8 +34,8 @@ async function renderHook<T>(hook: () => T): Promise<() => T> {
 
 
 beforeEach(async () => {
-  resetAuthMock();
-  const request = authService.signIn(DEMO_CREDENTIALS);
+  resetApiStub();
+  const request = authService.signIn(TEST_CREDENTIALS);
   jest.runAllTimers();
   await request;
 });
@@ -62,6 +64,7 @@ describe('useInvitations', () => {
   });
 
   it('loads an accepted invitation', async () => {
+    await invitationsService.acceptInvitation('inv-1');
     const result = await renderHook(() => useAcceptedInvitation('inv-1'));
     expect(result().invitation?.id).toBe('inv-1');
   });

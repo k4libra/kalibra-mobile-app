@@ -10,7 +10,7 @@ import ReactTestRenderer from 'react-test-renderer';
 import { AuthProvider } from '@/context/AuthContext';
 import { useAuthForm } from '@/hooks/useAuthForm';
 import { authService } from '@/services/auth.service';
-import { DEMO_CREDENTIALS, MOCK_AUTH_USER } from '@/mocks/auth.mock';
+import { TEST_CREDENTIALS, TEST_USER } from '@/test/apiFixtures';
 let tree: ReactTestRenderer.ReactTestRenderer;
 let value: ReturnType<typeof useAuthForm>;
 async function render(mode: 'signIn' | 'signUp') {
@@ -25,7 +25,7 @@ afterEach(() => { ReactTestRenderer.act(() => tree?.unmount()); jest.restoreAllM
 test('retains email feedback when dismissing only the credential notice', async () => {
   jest.spyOn(authService, 'signIn').mockRejectedValue(Object.assign(new Error('failure'), { code: 'INVALID_CREDENTIALS' }));
   await render('signIn');
-  ReactTestRenderer.act(() => { value.setEmail(DEMO_CREDENTIALS.email); value.setPassword('wrong'); });
+  ReactTestRenderer.act(() => { value.setEmail(TEST_CREDENTIALS.email); value.setPassword('wrong'); });
   await ReactTestRenderer.act(async () => { await value.submit(); });
   expect(value.notice).toBeTruthy(); expect(value.fieldErrors.email).toBe('Revisa este dato');
   ReactTestRenderer.act(() => value.dismissNotice());
@@ -40,16 +40,16 @@ test('validates registration inline before calling the service', async () => {
 test('clears duplicate-email recovery without losing name or password', async () => {
   jest.spyOn(authService, 'signUp').mockRejectedValue(Object.assign(new Error('duplicate'), { code: 'EMAIL_ALREADY_REGISTERED' }));
   await render('signUp');
-  ReactTestRenderer.act(() => { value.setFullName('Student'); value.setEmail(DEMO_CREDENTIALS.email); value.setPassword('Example2025!'); });
+  ReactTestRenderer.act(() => { value.setFullName('Student'); value.setEmail(TEST_CREDENTIALS.email); value.setPassword('Example2025!'); });
   await ReactTestRenderer.act(async () => { await value.submit(); });
   expect(value.isDuplicate).toBe(true);
   ReactTestRenderer.act(() => value.useAnotherEmail());
   expect(value.isDuplicate).toBe(false); expect(value.email).toBe(''); expect(value.fullName).toBe('Student'); expect(value.password).toBe('Example2025!');
 });
 test('sends the current fields and remember-device preference', async () => {
-  const signIn = jest.spyOn(authService, 'signIn').mockResolvedValue({ user: MOCK_AUTH_USER, accessToken: 'mock-form' });
+  const signIn = jest.spyOn(authService, 'signIn').mockResolvedValue({ user: TEST_USER });
   await render('signIn');
-  ReactTestRenderer.act(() => { value.setEmail(DEMO_CREDENTIALS.email); value.setPassword(DEMO_CREDENTIALS.password); value.setRememberDevice(false); });
+  ReactTestRenderer.act(() => { value.setEmail(TEST_CREDENTIALS.email); value.setPassword(TEST_CREDENTIALS.password); value.setRememberDevice(false); });
   await ReactTestRenderer.act(async () => { await value.submit(); });
-  expect(signIn).toHaveBeenCalledWith(DEMO_CREDENTIALS);
+  expect(signIn).toHaveBeenCalledWith(TEST_CREDENTIALS);
 });

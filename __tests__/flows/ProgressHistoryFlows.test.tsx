@@ -41,7 +41,7 @@ test('filters the history and opens the stored result of an answer', async () =>
   tree = await renderApp();
   await signInDemo(tree.root);
   await press(tree.root, 'Historial');
-  expect(hasText(tree.root, '74% aciertos')).toBe(true);
+  expect(hasText(tree.root, '67% aciertos')).toBe(true);
   await press(tree.root, /^Para repasar/);
   expect(hasText(tree.root, 'Matriz de subsecuencia común más larga (LCS)')).toBe(true);
   expect(hasText(tree.root, 'Evaluación de función recursiva misterio(n)')).toBe(false);
