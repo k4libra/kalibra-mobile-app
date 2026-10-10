@@ -5,7 +5,15 @@
  * @packageDocumentation
  */
 
+import { authService } from '@/services/auth.service';
+import { DEMO_CREDENTIALS, resetAuthMock } from '@/mocks/auth.mock';
 import { invitationsService } from './invitations.service';
+
+
+beforeEach(async () => {
+  resetAuthMock();
+  await authService.signIn(DEMO_CREDENTIALS);
+});
 
 describe('invitationsService', () => {
   it('lists pending and expired invitations', async () => {

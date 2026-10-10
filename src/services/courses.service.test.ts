@@ -5,7 +5,15 @@
  * @packageDocumentation
  */
 
+import { authService } from '@/services/auth.service';
+import { DEMO_CREDENTIALS, resetAuthMock } from '@/mocks/auth.mock';
 import { coursesService } from './courses.service';
+
+
+beforeEach(async () => {
+  resetAuthMock();
+  await authService.signIn(DEMO_CREDENTIALS);
+});
 
 describe('coursesService', () => {
   it('lists the enrolled courses', async () => {

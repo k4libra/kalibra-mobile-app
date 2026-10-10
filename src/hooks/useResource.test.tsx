@@ -5,6 +5,8 @@
  * @packageDocumentation
  */
 
+import { authService } from '@/services/auth.service';
+import { DEMO_CREDENTIALS, resetAuthMock } from '@/mocks/auth.mock';
 import React from 'react';
 import ReactTestRenderer from 'react-test-renderer';
 import { useCurrentStudent } from './useCurrentStudent';
@@ -23,6 +25,12 @@ function renderHook<T>(hook: () => T): { current: () => T } {
 }
 
 const flush = () => ReactTestRenderer.act(() => new Promise<void>(resolve => setTimeout(resolve, 200)));
+
+
+beforeEach(async () => {
+  resetAuthMock();
+  await authService.signIn(DEMO_CREDENTIALS);
+});
 
 describe('useResource', () => {
   it('exposes the loaded data', async () => {

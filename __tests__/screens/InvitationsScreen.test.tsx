@@ -5,6 +5,8 @@
  * @packageDocumentation
  */
 
+import { authService } from '@/services/auth.service';
+import { DEMO_CREDENTIALS, resetAuthMock } from '@/mocks/auth.mock';
 import React from 'react';
 import ReactTestRenderer from 'react-test-renderer';
 import { InvitationsScreen } from '@/screens/InvitationsScreen';
@@ -29,6 +31,14 @@ const pressButton = (root: ReactTestRenderer.ReactTestInstance, label: string) =
   ReactTestRenderer.act(() => {
     root.findAll(node => node.props.accessibilityRole === 'button' && node.props.accessibilityLabel === label)[0].props.onPress();
   });
+
+
+beforeEach(async () => {
+  resetAuthMock();
+  const request = authService.signIn(DEMO_CREDENTIALS);
+  jest.runAllTimers();
+  await request;
+});
 
 describe('InvitationsScreen', () => {
   it('opens the enrollment confirmation after accepting', async () => {
