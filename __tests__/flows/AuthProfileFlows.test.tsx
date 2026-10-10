@@ -63,8 +63,8 @@ test('registers into empty courses with zero profile statistics and no demo invi
 });
 test('navigates all tabs, toggles preferences and cancels or confirms logout without protected back history', async () => {
   tree = await renderApp(); await signInDemo(tree.root);
-  await press(tree.root, 'Progreso'); expect(hasText(tree.root, 'Mi progreso')).toBe(true);
-  await press(tree.root, 'Historial'); expect(hasText(tree.root, 'Historial')).toBe(true);
+  await press(tree.root, 'Progreso'); expect(hasText(tree.root, 'Mi Progreso Académico')).toBe(true);
+  await press(tree.root, 'Historial'); expect(hasText(tree.root, 'Historial de Práctica')).toBe(true);
   await press(tree.root, 'Cursos'); expect(hasText(tree.root, 'Cursos inscritos')).toBe(true);
   await press(tree.root, 'Perfil');
   expect(hasText(tree.root, '77')).toBe(true); expect(hasText(tree.root, '71%')).toBe(true); expect(hasText(tree.root, '3')).toBe(true);

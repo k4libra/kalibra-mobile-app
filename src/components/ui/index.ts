@@ -14,6 +14,7 @@ export { ErrorState, type ErrorStateProps } from './ErrorState';
 export { HeroBanner, type HeroBannerProps, type HeroBannerTone } from './HeroBanner';
 export { Icon, type IconProps, type IconSize } from './Icon';
 export { IconBox, type IconBoxProps, type IconBoxSize } from './IconBox';
+export { MasteryRing, type MasteryRingProps } from './MasteryRing';
 export { LoadingState, type LoadingStateProps } from './LoadingState';
 export { ProgressBar, type ProgressBarProps } from './ProgressBar';
 export { SectionTitle, type SectionTitleProps } from './SectionTitle';

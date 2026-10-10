@@ -20,7 +20,8 @@ import { ExerciseResultScreen } from '@/screens/ExerciseResultScreen';
 import { ExerciseScreen } from '@/screens/ExerciseScreen';
 import { InvitationsScreen } from '@/screens/InvitationsScreen';
 import { MyCoursesScreen } from '@/screens/MyCoursesScreen';
-import { PlaceholderScreen } from '@/screens/PlaceholderScreen';
+import { HistoryScreen } from '@/screens/HistoryScreen';
+import { ProgressScreen } from '@/screens/ProgressScreen';
 
 import { SignInScreen } from '@/screens/SignInScreen';
 import { SignUpScreen } from '@/screens/SignUpScreen';
@@ -32,9 +33,6 @@ import type { RootStackParamList, TabParamList } from './types';
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<TabParamList>();
 
-// Each feature branch replaces the placeholder of the screens it owns.
-const ProgressTab = () => <PlaceholderScreen title="Mi progreso" branch="feature/progress-history" />;
-const HistoryTab = () => <PlaceholderScreen title="Historial" branch="feature/progress-history" />;
 
 // Renders the custom bottom bar of the design system.
 const renderTabBar = (props: React.ComponentProps<typeof BottomTabBar>) => <BottomTabBar {...props} />;
@@ -46,8 +44,8 @@ function MainTabs() {
   return (
     <Tab.Navigator screenOptions={{ headerShown: false }} tabBar={renderTabBar}>
       <Tab.Screen name="Courses" component={MyCoursesScreen} />
-      <Tab.Screen name="Progress" component={ProgressTab} />
-      <Tab.Screen name="History" component={HistoryTab} />
+      <Tab.Screen name="Progress" component={ProgressScreen} />
+      <Tab.Screen name="History" component={HistoryScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>
   );

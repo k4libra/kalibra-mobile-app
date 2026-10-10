@@ -83,6 +83,7 @@ export type IconName =
   | 'group'
   | 'help'
   | 'history'
+  | 'hub'
   | 'hourglass_empty'
   | 'how_to_reg'
   | 'info'
