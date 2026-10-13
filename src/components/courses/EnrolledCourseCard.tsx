@@ -56,6 +56,9 @@ export function EnrolledCourseCard({ course, onContinue }: EnrolledCourseCardPro
           <Text variant="bodyM" color="secondary">
             {course.focus}
           </Text>
+          <Text variant="bodyM" color="secondary">
+            {course.teacherName ? `Docente: ${course.teacherName}` : 'Docente no disponible'}
+          </Text>
         </View>
       </View>
       <View style={styles.progress}>

@@ -31,6 +31,10 @@ test('maps names and preferences without storing a token', () => {
     darkMode: false,
   });
 });
+test('preserves the teacher name or null without inventing a teacher identity', () => {
+  expect(mapCourse(TEST_COURSES[0], TEST_PROGRESS[0]).teacherName).toBe(TEST_COURSES[0].teacherName);
+  expect(mapCourse({ ...TEST_COURSES[0], teacherName: null }, TEST_PROGRESS[0]).teacherName).toBeNull();
+});
 test('preserves null mastery and does not scale percentages or turn levels into invented percentages', () => {
   expect(averageMastery([null, null])).toBeNull();
   expect(averageMastery([40, 70, null])).toBe(55);

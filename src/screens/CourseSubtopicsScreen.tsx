@@ -38,6 +38,11 @@ export function CourseSubtopicsScreen({ navigation, route }: RootScreenProps<'Co
         </Text>
         {course && (
           <Text variant="bodyM" color="secondary">
+            {course.teacherName ? `Docente: ${course.teacherName}` : 'Docente no disponible'}
+          </Text>
+        )}
+        {course && (
+          <Text variant="bodyM" color="secondary">
             {[course.faculty, course.semester, `Código ${course.code}`].filter(Boolean).join(' · ')}
           </Text>
         )}
