@@ -44,8 +44,8 @@ export interface CourseDto {
   name: string;
   /** Institutional code. */
   code: string;
-  /** Teacher display name. */
-  teacherName: string;
+  /** Teacher display name, or null when unavailable. */
+  teacherName: string | null;
   /** Ordered curriculum. */
   subtopics: SubtopicDto[];
   /** Enrollment date in ISO format. */

@@ -18,8 +18,8 @@ export interface EnrolledCourse {
   name: string;
   /** Institutional code, for example `CS-204`. */
   code: string;
-  /** Full name of the teacher. */
-  teacherName: string;
+  /** Full name of the teacher, or null when unavailable. */
+  teacherName: string | null;
   /** Faculty that offers the course. */
   faculty: string;
   /** Semester label, for example `Semestre IV`. */

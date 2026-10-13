@@ -49,7 +49,7 @@ export const invitationsService: InvitationsContract = {
       courseId: dto.courseId,
       courseName: course.name,
       courseCode: course.code,
-      teacherName: course.teacherName,
+      teacherName: course.teacherName ?? 'Docente no disponible',
     };
     accepted.set(invitationId, invitation);
     return invitation;

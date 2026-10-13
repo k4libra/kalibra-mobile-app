@@ -121,4 +121,7 @@ export const apiClient = {
   /** Replaces a resource with JSON data; rejects with ApiError on failure. */
   put: <T>(path: string, body: unknown, options?: RequestOptions) =>
     request<T>('PUT', path, { ...options, body }),
+  /** Partially updates a resource with JSON data; rejects with ApiError on failure. */
+  patch: <T>(path: string, body: unknown, options?: RequestOptions) =>
+    request<T>('PATCH', path, { ...options, body }),
 };

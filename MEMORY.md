@@ -2,11 +2,11 @@
 
 Inter-session project memory. Keep this file concise (about ~50 lines).
 
-## Current status (2026-10-10)
-- `feature/e2e-fidelity` adds ordered statement code cards, five-exercise visits and optional adaptive difficulty on top of the real HTTP integration.
+## Current status (2026-10-12)
+- `feature/course-teacher-visibility` shows nullable teacher names in course cards/headers and patches student preferences.
 - Auth uses native `token` cookies with credentials included; no JWT is stored in JavaScript.
 - Generic typed fixtures and a fetch stub live only in `src/test`; production has no mock scenario.
-- TypeScript and all 137 tests pass; ESLint has no errors (two existing MasteryRing inline-style warnings).
+- TypeScript and all 143 tests pass; ESLint has no errors (two existing MasteryRing inline-style warnings).
 - Frontend audit has no errors; layer README warnings are expected by the user rule. StudentData is tested through service pagination tests.
 - Android live verification confirms `2 resueltos` at 28% mastery, `Ejercicio 1 / 5` with five segments and adaptive difficulty `Nivel 1`; all five steps and code rendering pass integration tests.
 - An earlier live response omitted difficulty; the latest includes it. Native code-card verification remains pending because received statements were prose; iOS is blocked by CoreSimulator access.
@@ -14,6 +14,8 @@ Inter-session project memory. Keep this file concise (about ~50 lines).
 - US-024 dark mode persists the preference through HTTP; the dark palette remains pending.
 
 ## Decisions (and why)
+- Course teacherName stays string | null through DTO/model/mapper; missing names display "Docente no disponible".
+- Preferences use one PATCH /student-preferences/me with only changed fields; reminder time is preserved and defaults to 20:00:00 UTC when enabling without a stored time. Legacy PUT endpoints are removed from services and stubs.
 - Screens -> hooks/useResource -> contract services -> one fetch client; no added native dependency.
 - Pure statement splitting preserves prose/code order and source indentation; fenced language is retained, unmarked code gets no invented language or file name. Source is never evaluated.
 - PracticeProvider shares hook-owned session state across exercise/result replacements. Five loaded exercises per subtopic visit; navigation away or account changes reset it. The fifth result returns to the subtopic.
@@ -27,7 +29,6 @@ Inter-session project memory. Keep this file concise (about ~50 lines).
 - History loads every page per enrolled course, requests server outcome filters and counts each course's global totals once.
 - Exact percentages come from student-progress; qualitative levels never become invented percentages. hasActivity controls the initial state.
 - Missing faculty/term, duration, hints, code, session scores and estimated time are omitted. Server explanations are preserved without synthesized steps.
-- Reminder time is preserved; enabling with no prior time sends 20:00:00 UTC, as required by the API.
 - Read-only data refreshes when navigation regains focus; practice generation is excluded to avoid unintended POST requests.
 - Same token names as kalibra-web-app; README.md only in empty layer folders except the explicitly requested root README.
 

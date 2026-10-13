@@ -46,7 +46,7 @@ export function mapCourse(
     id: dto.courseId,
     name: dto.name,
     code: dto.code,
-    teacherName: dto.teacherName,
+    teacherName: dto.teacherName ?? null,
     faculty: '',
     semester: '',
     icon: 'menu_book',
