@@ -99,19 +99,15 @@ export function resetApiStub() {
       if (!current) return problem(401);
       if (path === '/users/me') return jsonResponse(current.user);
       if (path === '/students/me/courses') return jsonResponse(current.courses);
-      if (path === '/student-preferences/me')
+      if (path === '/student-preferences/me' && method === 'GET')
         return jsonResponse(current.preferences);
-      if (method === 'PUT' && path === '/student-preferences/me/dark-mode') {
-        current.preferences.darkMode = body.enabled === true;
-        return jsonResponse(current.preferences);
-      }
-      if (
-        method === 'PUT' &&
-        path === '/student-preferences/me/daily-reminder'
-      ) {
-        current.preferences.dailyReminderEnabled = body.enabled === true;
-        current.preferences.dailyReminderTime =
-          typeof body.time === 'string' ? body.time : null;
+      if (path === '/student-preferences/me' && method === 'PATCH') {
+        if (body.dailyReminderEnabled !== undefined)
+          current.preferences.dailyReminderEnabled = body.dailyReminderEnabled === true;
+        if (typeof body.dailyReminderTime === 'string')
+          current.preferences.dailyReminderTime = body.dailyReminderTime;
+        if (body.darkMode !== undefined)
+          current.preferences.darkMode = body.darkMode === true;
         return jsonResponse(current.preferences);
       }
       if (path === '/invitations?status=PENDING')

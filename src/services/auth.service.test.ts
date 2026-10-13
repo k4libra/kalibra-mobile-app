@@ -46,7 +46,7 @@ test('rejects invalid registration before sending any request', async () => {
 test('persists preferences by account and uses the default reminder time only when unset', async () => {
   await authService.signIn(TEST_CREDENTIALS);
   await authService.updatePreferences({ darkMode: true, dailyReminders: true });
-  expect(fetchSpy).toHaveBeenCalledWith(`${API_BASE_URL}/student-preferences/me/daily-reminder`, expect.objectContaining({ method: 'PUT', body: JSON.stringify({ enabled: true, time: '20:00:00' }) }));
+  expect(fetchSpy).toHaveBeenCalledWith(`${API_BASE_URL}/student-preferences/me`, expect.objectContaining({ method: 'PATCH', body: JSON.stringify({ dailyReminderEnabled: true, dailyReminderTime: '20:00:00', darkMode: true }) }));
   await authService.signOut();
   expect(getSession()).toBeNull();
   await authService.signUp(newAccount);
@@ -64,4 +64,41 @@ test('does not publish a sign-in that finishes after sign-out', async () => {
   resolve(jsonResponse({ id: TEST_USER.id, email: TEST_USER.email, firstName: 'Estudiante', lastName: 'Test Uno', roles: ['STUDENT'] }));
   expect(await outcome).toMatchObject({ code: 'UNAUTHORIZED' });
   expect(getSession()).toBeNull();
+});
+test('patches dark mode independently without sending reminder fields or PUT requests', async () => {
+  await authService.signIn(TEST_CREDENTIALS);
+  fetchSpy.mockClear();
+  expect(await authService.updatePreferences({ darkMode: true })).toMatchObject({ darkMode: true });
+  expect(fetchSpy).toHaveBeenCalledWith(`${API_BASE_URL}/student-preferences/me`, expect.objectContaining({ method: 'PATCH', body: JSON.stringify({ darkMode: true }) }));
+  expect(fetchSpy.mock.calls.some(([, init]) => init?.method === 'PUT')).toBe(false);
+});
+test('preserves a stored reminder time on enabling and omits the time on disabling', async () => {
+  await authService.signIn(TEST_CREDENTIALS);
+  fetchSpy.mockResolvedValueOnce(jsonResponse({ dailyReminderEnabled: false, dailyReminderTime: '07:30:00', darkMode: false }));
+  await authService.updatePreferences({ dailyReminders: true });
+  expect(fetchSpy).toHaveBeenCalledWith(`${API_BASE_URL}/student-preferences/me`, expect.objectContaining({ method: 'PATCH', body: JSON.stringify({ dailyReminderEnabled: true, dailyReminderTime: '07:30:00' }) }));
+  expect(await authService.updatePreferences({ dailyReminders: false })).toMatchObject({ dailyReminders: false });
+  expect(fetchSpy).toHaveBeenCalledWith(`${API_BASE_URL}/student-preferences/me`, expect.objectContaining({ method: 'PATCH', body: JSON.stringify({ dailyReminderEnabled: false }) }));
+  await authService.updatePreferences({ dailyReminders: true });
+  expect(fetchSpy.mock.calls.filter(([, init]) => init?.method === 'PATCH').at(-1)?.[1]?.body).toBe(JSON.stringify({ dailyReminderEnabled: true, dailyReminderTime: '07:30:00' }));
+});
+test('does not publish a preference PATCH response after signing out', async () => {
+  await authService.signIn(TEST_CREDENTIALS);
+  const original = fetchSpy.getMockImplementation()!;
+  let resolve!: (response: Response) => void;
+  let patchStarted!: () => void;
+  const started = new Promise<void>(done => { patchStarted = done; });
+  fetchSpy.mockImplementation((url, init) => {
+    if (init?.method === 'PATCH') {
+      patchStarted();
+      return new Promise(done => { resolve = done; });
+    }
+    return original(url, init);
+  });
+  const pending = authService.updatePreferences({ darkMode: true });
+  const outcome = pending.catch(reason => reason);
+  await started;
+  await authService.signOut();
+  resolve(jsonResponse({ dailyReminderEnabled: true, dailyReminderTime: '20:00:00', darkMode: true }));
+  expect(await outcome).toMatchObject({ code: 'UNAUTHORIZED' });
 });

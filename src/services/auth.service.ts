@@ -152,20 +152,16 @@ export const authService: AuthServiceContract = {
     let dto = await apiClient.get<PreferencesDto>('/student-preferences/me');
     if (revision !== getSessionRevision())
       throw new ApiError(401, 'UNAUTHORIZED');
+    const changes: Partial<PreferencesDto> = {};
     if (preferences.dailyReminders !== undefined) {
-      dto = await apiClient.put('/student-preferences/me/daily-reminder', {
-        enabled: preferences.dailyReminders,
-        time: preferences.dailyReminders
-          ? dto.dailyReminderTime ?? '20:00:00'
-          : dto.dailyReminderTime,
-      });
+      changes.dailyReminderEnabled = preferences.dailyReminders;
+      if (preferences.dailyReminders)
+        changes.dailyReminderTime = dto.dailyReminderTime ?? '20:00:00';
     }
-    if (revision !== getSessionRevision())
-      throw new ApiError(401, 'UNAUTHORIZED');
     if (preferences.darkMode !== undefined)
-      dto = await apiClient.put('/student-preferences/me/dark-mode', {
-        enabled: preferences.darkMode,
-      });
+      changes.darkMode = preferences.darkMode;
+    if (Object.keys(changes).length)
+      dto = await apiClient.patch<PreferencesDto>('/student-preferences/me', changes);
     if (revision !== getSessionRevision())
       throw new ApiError(401, 'UNAUTHORIZED');
     return mapPreferences(dto);

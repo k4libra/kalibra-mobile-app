@@ -11,9 +11,26 @@ import { CodeBlock, SessionSegments } from '@/components/practice';
 import { Chip } from '@/components/ui';
 import { ExerciseScreen } from '@/screens/ExerciseScreen';
 import { jsonResponse } from '@/test/fetchStub';
+import { TEST_COURSES } from '@/test/apiFixtures';
+import { CourseSubtopicsScreen } from '@/screens/CourseSubtopicsScreen';
 
 jest.useFakeTimers();
 afterEach(() => jest.clearAllTimers());
+
+test.each([['Profesor Test Uno', 'Docente: Profesor Test Uno'], [null, 'Docente no disponible']])('shows teacher %s on the enrolled card and course header', async (teacherName, label) => {
+  const tree = await renderApp();
+  const fetchSpy = jest.mocked(globalThis.fetch);
+  const original = fetchSpy.getMockImplementation()!;
+  fetchSpy.mockImplementation((url, init) => String(url).endsWith('/students/me/courses')
+    ? Promise.resolve(jsonResponse(TEST_COURSES.map(course => ({ ...course, teacherName }))))
+    : original(url, init));
+  try {
+    await signInDemo(tree.root);
+    expect(hasText(tree.root, label!)).toBe(true);
+    await press(tree.root, 'Continuar práctica');
+    expect(hasText(tree.root.findByType(CourseSubtopicsScreen), label!)).toBe(true);
+  } finally { await dispose(tree); }
+});
 
 test('practices a subtopic from my courses and continues after the result', async () => {
   const tree = await renderApp();
