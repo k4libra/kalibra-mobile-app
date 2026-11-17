@@ -7,12 +7,13 @@
 
 import type { PendingInvitationDto } from '@/types/api';
 import type { StudentInvitation } from '@/types/invitation';
+import { formatShortDayMonth } from '@/utils/term';
 /**
- * Maps a pending invitation; course identity becomes available only after acceptance.
+ * Maps invitation identity and expiry from both status-filtered resources.
  *
  * @param dto - Pending invitation as returned by the API.
  * @param now - Reference time in epoch milliseconds for expiry classification.
- * @returns Invitation UI data; course identity remains unavailable before acceptance.
+ * @returns Invitation UI data with email fallback for missing sender names.
  *
  * @example
  * ```ts
@@ -23,22 +24,19 @@ export function mapInvitation(
   dto: PendingInvitationDto,
   now: number = Date.now(),
 ): StudentInvitation {
-  const expired = Date.parse(dto.expiresAt) <= now;
+  const expired = dto.status === 'EXPIRED' || Date.parse(dto.expiresAt) <= now;
   return {
     id: dto.id,
-    courseId: '',
+    courseId: dto.courseId ?? '',
     courseName: dto.courseName,
     courseCode: '',
     term: '',
-    teacherName: dto.teacherEmail,
-    icon: 'menu_book',
-    sentAt: new Date(dto.sentAt).toLocaleDateString('es-PE', {
-      day: '2-digit',
-      month: 'short',
-    }),
+    teacherName: dto.teacherName?.trim() || dto.teacherEmail,
+    icon: /algorit|programa|estructura/i.test(dto.courseName) ? 'account_tree' : /álgebra|algebra/i.test(dto.courseName) ? 'grid_on' : /cálculo|calculo/i.test(dto.courseName) ? 'functions' : 'menu_book',
+    sentAt: formatShortDayMonth(dto.sentAt),
     validity: expired
-      ? 'Invitación vencida'
-      : `Vence el ${new Date(dto.expiresAt).toLocaleDateString('es-PE')}`,
+      ? 'Vencida'
+      : `Vence en ${Math.max(1, Math.ceil((Date.parse(dto.expiresAt) - now) / 86400000))} ${Math.ceil((Date.parse(dto.expiresAt) - now) / 86400000) <= 1 ? 'día' : 'días'}`,
     status: expired ? 'expired' : 'pending',
   };
 }

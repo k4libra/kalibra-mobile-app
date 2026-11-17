@@ -8,7 +8,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { InvitationCard } from '@/components/courses';
-import { AppHeader, BackLink, ScreenContainer } from '@/components/layout';
+import { AppHeader, ScreenContainer } from '@/components/layout';
 import { ConfirmDialog, EmptyState, ErrorState, LoadingState, SectionTitle, Text } from '@/components/ui';
 import { useCurrentStudent } from '@/hooks/useCurrentStudent';
 import { useInvitations } from '@/hooks/useInvitations';
@@ -21,7 +21,7 @@ import { plural } from '@/utils/plural';
  * Shows the pending and expired invitations and asks for confirmation before answering, using {@link useInvitations}.
  */
 export function InvitationsScreen({ navigation }: RootScreenProps<'Invitations'>) {
-  const { pending, expired, accept, reject, isLoading, isSubmitting, error } = useInvitations();
+  const { pending, expired, accept, reject, isLoading, isSubmitting, error, refetch } = useInvitations();
   const { student } = useCurrentStudent();
   const [toAccept, setToAccept] = useState<StudentInvitation | null>(null);
   const [toReject, setToReject] = useState<StudentInvitation | null>(null);
@@ -41,17 +41,16 @@ export function InvitationsScreen({ navigation }: RootScreenProps<'Invitations'>
   };
 
   return (
-    <ScreenContainer
+    <ScreenContainer variant="invitations" onRefresh={refetch} refreshing={isLoading}
       header={
         <AppHeader title="Invitaciones" onBack={navigation.goBack} avatar={student?.avatar} onProfile={() => navigation.navigate('Tabs', { screen: 'Profile' })} />
       }
     >
       <View style={styles.heading}>
-        <BackLink label="Mis cursos" onPress={goToCourses} />
         <Text variant="headlineL" isHeading>
           Invitaciones a cursos
         </Text>
-        <Text variant="bodyM" color="secondary">
+        <Text variant="bodyL" color="secondary">
           Tu docente te invita a su curso usando tu correo registrado. Cada invitación vence a los 3 días.
         </Text>
       </View>
@@ -60,7 +59,7 @@ export function InvitationsScreen({ navigation }: RootScreenProps<'Invitations'>
 
       {isLoading ? (
         <LoadingState />
-      ) : (
+      ) : !error && (
         <>
           <View style={styles.section}>
             <SectionTitle title="Pendientes" caption={plural(pending.length, 'invitación', 'invitaciones')} />
@@ -69,8 +68,8 @@ export function InvitationsScreen({ navigation }: RootScreenProps<'Invitations'>
                 <InvitationCard key={invitation.id} invitation={invitation} onAccept={setToAccept} onReject={setToReject} />
               ))
             ) : (
-              <EmptyState
-                icon="notifications"
+              <EmptyState compact
+                icon="inbox"
                 title="No tienes invitaciones pendientes"
                 description="Cuando tu docente te invite a un curso, verás el aviso en la campana de notificaciones."
                 actionLabel="Volver a mis cursos"
@@ -91,22 +90,22 @@ export function InvitationsScreen({ navigation }: RootScreenProps<'Invitations'>
 
       <ConfirmDialog
         isVisible={toAccept !== null}
+        isSubmitting={isSubmitting}
         icon="school"
         title={`¿Unirte a ${toAccept?.courseName ?? ''}?`}
         description="Quedarás matriculado en el curso y podrás practicar sus subtemas desde hoy."
         confirmLabel="Sí, unirme al curso"
-        confirmIcon="check"
         onConfirm={confirmAccept}
         onCancel={() => setToAccept(null)}
       />
       <ConfirmDialog
         isVisible={toReject !== null}
+        isSubmitting={isSubmitting}
         icon="close"
         tone="danger"
         title="¿Rechazar la invitación?"
         description={`No te matricularás en ${toReject?.courseName ?? ''}. Tu docente podrá reenviarte la invitación.`}
         confirmLabel="Sí, rechazar"
-        confirmIcon="close"
         onConfirm={confirmReject}
         onCancel={() => setToReject(null)}
       />
@@ -115,6 +114,6 @@ export function InvitationsScreen({ navigation }: RootScreenProps<'Invitations'>
 }
 
 const styles = StyleSheet.create({
-  heading: { gap: spacing.xs },
-  section: { gap: spacing.xl },
+  heading: { gap: spacing.sm },
+  section: { gap: spacing.xxl },
 });

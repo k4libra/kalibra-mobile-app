@@ -14,13 +14,18 @@ import { getEnrolledCourse } from '@/services/http/studentData';
 import { mapInvitation } from '@/services/mappers/invitations';
 const accepted = new Map<string, StudentInvitation>();
 subscribeSession(() => accepted.clear());
-/** Lists pending invitations and preserves accepted metadata for the confirmation route. */
+/** Lists pending/expired invitations and preserves accepted metadata for the confirmation route. */
 export const invitationsService: InvitationsContract = {
   /** {@inheritDoc InvitationsContract.listInvitations} */
   async listInvitations() {
-    return (
-      await apiClient.get<PendingInvitationDto[]>('/invitations?status=PENDING')
-    ).map(item => mapInvitation(item));
+    const [pending, expired] = await Promise.all([
+      apiClient.get<PendingInvitationDto[]>('/invitations?status=PENDING'),
+      apiClient.get<PendingInvitationDto[]>('/invitations?status=EXPIRED'),
+    ]);
+    // Expired rows win if a pending invitation expires between the two reads.
+    const unique = new Map([...pending, ...expired.map(item => ({ ...item, status: 'EXPIRED' as const }))]
+      .map(item => [item.id, item]));
+    return [...unique.values()].map(item => mapInvitation(item));
   },
   /** {@inheritDoc InvitationsContract.getInvitation} */
   async getInvitation(invitationId) {
@@ -49,7 +54,8 @@ export const invitationsService: InvitationsContract = {
       courseId: dto.courseId,
       courseName: course.name,
       courseCode: course.code,
-      teacherName: course.teacherName ?? 'Docente no disponible',
+      teacherName: course.teacherName || pending.teacherName,
+      term: course.term ?? pending.term,
     };
     accepted.set(invitationId, invitation);
     return invitation;
