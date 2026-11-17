@@ -1,44 +1,47 @@
 # MEMORY.md - Kalibra Mobile App
 
-Inter-session project memory. Keep this file concise (about ~50 lines).
+## Current status (2026-11-16)
+- UI v2 refactor is uncommitted on `feature/ui-v2-refactor`; never stage, commit, push or switch branches for this task.
+- Exercise loading now uses the approved SVG calibration gauge and skeletons; 400 ms settling + 150 ms pause + 250 ms crossfade, six-second generation caption and live reduced-motion support. Other screens retain LoadingState.
+- Rebuilt all student routes/states from the approved reference pack; subject variants share data-driven screens.
+- Tokens, Lucide icons, exact SVG logo/glow, floating navigation, bottom sheets, forms and cards use v2 geometry.
+- Bundled OFL Plus Jakarta Sans ExtraBold, Roboto Mono Regular/Medium/Bold and STIX Two Text Regular; linked iOS/Android.
+- `react-native-svg` and `lucide-react-native` are explicitly approved exceptions to the old no-native-dependency rule; Material Symbols removed. `pod install` passed (88 pods).
+- Shared-contract validation: lint (zero warnings/errors), TypeScript, Jest (35 suites / 240 tests), and diff whitespace checks pass. No simulator run for this task. Earlier UI v2 production JavaScript bundle passed.
+- Native Release run on iPhone 17 Pro (iOS 26.4) verified outside the Codex sandbox with Maestro: sign-in, Mis cursos, Progreso, Historial, Perfil, Subtemas, Ejercicio, Resultado, Invitaciones (reject + empty state) match the v2 frames; Codex's sandbox cannot reach CoreSimulator.
+- Follow-up fixes: cycle label uses enrollment `term`, falling back to `currentAcademicTerm()`; bell CountBadge hidden at 0; header transparent over BackgroundGlow; course focus clamped to 2 lines; relative dates (`Hoy, 10:45`); invitation date `14 nov`; profile fallback shows cycle instead of duplicating the role.
+- Real local HTTP verification: specified student signed in/out, courses/progress/history/invitations/preferences read; both preference toggles persisted and original values restored.
+- Real engine generated an exercise (33 seconds); answer recorded with explanation and mastery delta; ALL/CORRECT/INCORRECT history filters passed. This adds one real practice attempt.
+- The specified account had no pending invitations; live acceptance/rejection and all simulator flows remain unverified. Automated flows cover both.
+- Earlier QA: 23 native flows/140 DOCX screenshots belong to the previous UI, not v2; existing evidence files were not changed.
 
-## Current status (2026-10-12)
-- `feature/course-teacher-visibility` shows nullable teacher names in course cards/headers and patches student preferences.
-- Auth uses native `token` cookies with credentials included; no JWT is stored in JavaScript.
-- Generic typed fixtures and a fetch stub live only in `src/test`; production has no mock scenario.
-- TypeScript and all 143 tests pass; ESLint has no errors (two existing MasteryRing inline-style warnings).
-- Frontend audit has no errors; layer README warnings are expected by the user rule. StudentData is tested through service pagination tests.
-- Android live verification confirms `2 resueltos` at 28% mastery, `Ejercicio 1 / 5` with five segments and adaptive difficulty `Nivel 1`; all five steps and code rendering pass integration tests.
-- An earlier live response omitted difficulty; the latest includes it. Native code-card verification remains pending because received statements were prose; iOS is blocked by CoreSimulator access.
-- Changes remain uncommitted by task instruction; the operator handles commits and push.
-- US-024 dark mode persists the preference through HTTP; the dark palette remains pending.
+## Decisions
+- Unfenced statement code is grouped as one region: lines between the first and last code-like line join the code block unless they are sentences (end in . ? ! : or start with ¿), so C++/CLI classes (`ref class`, `private:`) never alternate prose and code.
+- Preserve screens -> hooks/useResource -> contract services -> one cookie-authenticated fetch client. No backend repositories or endpoint contracts changed.
+- PracticeProvider owns five-exercise visits; replacement routes preserve outcomes and leaving practice/account changes reset them.
+- Práctica exprés posts `{courseId, mode: "EXPRESS"}` for each of five exercises; the server selects/rotates subtopics. Sessions stay course-scoped and chips use response `subtopicId`.
+- Guided calibration receives the already loaded subtopic/mastery through route params; continuation uses the answer response’s exact currentMastery. No additional requests or dependencies; missing difficulty bypasses the level reveal.
+- Timer snapshots active seconds at submission, excluding generation/background/pauses and capped at 3600; POST includes `timeSpentSeconds`. History formats real seconds (`1m 42s`, including zero); only legacy null/missing values use `Sin registro`.
+- Pull-to-refresh reloads student invitation count together with courses; badge reflects real counts including zero.
+- No invented mastery: null stays unknown; Bajo <40, Medio 40-70 inclusive, Alto >70. Only mastery change uses points.
+- Unavailable cycle uses `Ciclo actual`; missing photo uses initials; course continuation is a reinforcement recommendation from measured progress, not fabricated last-visit metadata.
+- Known difficulty maps EASY/MEDIUM/HARD to level 1/2/3 and basic/intermediate/advanced; missing values use generic adaptive labels.
+- Missing subtopic descriptions/hints/tips use neutral study guidance. No invented pending counts, solution steps or correct options.
+- Result/history share numbered `explanationSteps` title/detail cards: TEXT prose, CODE existing editor, FORMULA STIX block; supplied `keyIdea` appears as `Idea clave`. Missing/empty steps retain legacy paragraphs/code/math without synthesizing reasoning.
+- Answer comparison (Tu respuesta / Respuesta correcta) shows only for wrong answers, as in the Figma frames; correct answers avoid duplicated cards.
+- Result/history resolve selected/correct option letters and text from API keys/options; correct answers are green and wrong selections red. Legacy fresh submissions can recover the selected text from the account-scoped exercise cache.
+- Missing file/language metadata uses `Código`; missing formula domain uses `Expresión matemática`; remaining-time slot uses `Tiempo no estimado`.
+- Invitations load PENDING and EXPIRED in parallel, deduplicate by ID with expired status winning, retain `courseId`, and prefer `teacherName` over email. Expired cards have resend guidance and no actions.
+- Enrolled course metadata supplies term/faculty/semester and subtopic description when present; profile and cycle summary prefer API term. Date-derived cycle remains a fallback. Unsupported university count stays removed.
+- Dark mode remains a saved preference (US-024 Won't), with the approved light palette. Reminder preference uses existing PATCH and preserves stored time; delivery is backend-owned and unverified.
+- Native top safe area is preserved; floating TabBar uses the requested 16-point bottom inset.
+- Arbitrary failures are normalized to safe Spanish retry-later copy; no internal exception messages reach screens.
 
-## Decisions (and why)
-- Course teacherName stays string | null through DTO/model/mapper; missing names display "Docente no disponible".
-- Preferences use one PATCH /student-preferences/me with only changed fields; reminder time is preserved and defaults to 20:00:00 UTC when enabling without a stored time. Legacy PUT endpoints are removed from services and stubs.
-- Screens -> hooks/useResource -> contract services -> one fetch client; no added native dependency.
-- Pure statement splitting preserves prose/code order and source indentation; fenced language is retained, unmarked code gets no invented language or file name. Source is never evaluated.
-- PracticeProvider shares hook-owned session state across exercise/result replacements. Five loaded exercises per subtopic visit; navigation away or account changes reset it. The fifth result returns to the subtopic.
-- Exercise routes are replaced by results to avoid retaining answered exercises and growing the stack. Outcome recording is scoped to the active route; concurrent submissions are blocked.
-- EASY/MEDIUM/HARD map to adaptive levels 1/2/3; missing difficulty, points and elapsed time remain hidden. Practiced subtopic notes use solved counts with singular/plural, falling back to level copy.
-- `lastActivityAt` has no existing profile/progress label, so no UI or mapping is added for it.
-- Android emulator uses 10.0.2.2:8080; iOS simulator uses localhost:8080. HTTP is allowed only for these Android debug hosts.
-- Registration sends MOBILE_APP and splits the existing full-name field into firstName (first term) and lastName (remainder); sign-in after registration obtains the cookie.
-- Protected 401 responses clear AuthContext; session generations prevent obsolete requests from publishing identity or cached results.
-- Practice submits A-D keys once per action; results use an account-scoped attemptId cache and recover from paginated history when uncached.
-- History loads every page per enrolled course, requests server outcome filters and counts each course's global totals once.
-- Exact percentages come from student-progress; qualitative levels never become invented percentages. hasActivity controls the initial state.
-- Missing faculty/term, duration, hints, code, session scores and estimated time are omitted. Server explanations are preserved without synthesized steps.
-- Read-only data refreshes when navigation regains focus; practice generation is excluded to avoid unintended POST requests.
-- Same token names as kalibra-web-app; README.md only in empty layer folders except the explicitly requested root README.
-
-## Pitfalls to avoid
-- Local API requires KALIBRA_SEED_GENERIC_USERS=true and JWT_COOKIE_SECURE=false for HTTP simulator sessions; never commit .env.
-- Do not modify kalibra-api or kalibra-adaptive-engine from this task.
-- iOS 27 requires UIScene; use iOS 26.x until AppDelegate adopts it.
-- TypeScript 6: alias @/ uses paths without deprecated baseUrl.
-- Jest: unmount navigation trees and flush timers to prevent work after teardown.
-
-## Next steps
-- Validate a native code card with a live statement containing code.
-- Add a dark palette for US-024 and adopt UIScene for iOS 27.
+## Pitfalls
+- Credentials remain in memory only; never print/store them or read `api-keys.txt`.
+- iOS 27 still needs UIScene; use iOS 26.x. Simulator access must be restored before native build/visual acceptance can be completed.
+- Start the exercise timer only after calibration/crossfade finishes; keep motion static until AccessibilityInfo resolves, observe changes and stop loops/timeouts on cleanup.
+- Jest resolves Lucide's CJS build; SVG runs through the React Native preset. Use pending-timer flushing with the exercise timer.
+- Font filenames/PostScript names must match; run react-native-asset after changes. Font license files are bundled too.
+- Reminder enabling needs dailyReminderTime (preserve existing or use contract default 20:00:00 UTC); preference-only toggles must not alter unrelated fields.
+- Preserve previous academic/QA artifacts; temporary comparison/build outputs belong outside the repo and are removed before handoff.
