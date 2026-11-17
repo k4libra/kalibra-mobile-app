@@ -19,6 +19,7 @@ import {
   mapCourse,
   mapSubtopics,
 } from '@/services/mappers/courses';
+import { currentAcademicTerm } from '@/utils/term';
 /** Reads student identity, enrolled courses and measured subtopic progress. */
 export const coursesService: CoursesContract = {
   /** {@inheritDoc CoursesContract.getStudent} */
@@ -35,16 +36,16 @@ export const coursesService: CoursesContract = {
       'firstName' in user ? user.firstName : user.fullName.split(/\s+/)[0];
     return {
       firstName,
-      term: '',
+      term: courses.find(course => course.term?.trim())?.term || currentAcademicTerm(),
       avatar: undefined,
       solvedExerciseCount: courses.reduce(
         (sum, course) => sum + course.solvedExerciseCount,
         0,
       ),
       averageMastery:
-        averageMastery(courses.map(course => course.mastery)) ?? 0,
+        averageMastery(courses.map(course => course.mastery)),
       pendingInvitationCount: invitations.filter(
-        item => Date.parse(item.expiresAt) > Date.now(),
+        item => item.status !== 'EXPIRED' && Date.parse(item.expiresAt) > Date.now(),
       ).length,
     };
   },

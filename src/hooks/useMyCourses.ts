@@ -5,6 +5,7 @@
  * @packageDocumentation
  */
 
+import { useMemo } from 'react';
 import { coursesService } from '@/services/courses.service';
 import { useResource } from './useResource';
 
@@ -24,5 +25,16 @@ export function useMyCourses() {
     'my-courses',
     true,
   );
-  return { student: data?.[0] ?? null, courses: data?.[1] ?? [], isLoading, error, refetch };
+  const courses = data?.[1];
+  const recommendation = useMemo(() => {
+    const available = courses ?? [];
+    // Resume the practiced course that needs the most reinforcement, then its weakest subtopic.
+    const practiced = available.filter(course => course.solvedExerciseCount > 0);
+    const featuredCourse = [...(practiced.length ? practiced : available)]
+      .sort((a, b) => (a.mastery ?? -1) - (b.mastery ?? -1))[0] ?? null;
+    return { featuredCourse, quickPractice: featuredCourse
+      ? { courseId: featuredCourse.id, mode: 'EXPRESS' as const }
+      : null };
+  }, [courses]);
+  return { student: data?.[0] ?? null, courses: courses ?? [], ...recommendation, isLoading, error, refetch };
 }

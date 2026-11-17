@@ -12,6 +12,8 @@ import type { IconName } from './ui';
  * Describes a course the student is enrolled in, with the progress shown in its card.
  */
 export interface EnrolledCourse {
+  /** Academic term supplied by the enrolled course. */
+  term?: string;
   /** Unique identifier assigned by the server. */
   id: string;
   /** Name of the course. */
@@ -75,7 +77,7 @@ export interface Student {
   /** Exercises solved across every course. */
   solvedExerciseCount: number;
   /** Average mastery across every course, from 0 to 100. */
-  averageMastery: number;
+  averageMastery: number | null;
   /** Invitations waiting for an answer. */
   pendingInvitationCount: number;
 }

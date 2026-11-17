@@ -1,72 +1,46 @@
-/**
- * Overall progress of the student in a course.
- *
- * @author G0nz4loQu3dena
- * @packageDocumentation
- */
-
+/** Course identity and measured practice progress in the shared course hero. */
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import { Card, Icon, IconBox, Text } from '@/components/ui';
-import { colors, gradients, radius, spacing } from '@/theme/tokens';
+import { Card, Icon, IconBox, ProgressBar, Text } from '@/components/ui';
+import { colors, gradients } from '@/theme/tokens';
 import type { EnrolledCourse } from '@/types/course';
 
-/**
- * Props accepted by {@link CourseProgressCard}.
- */
+/** Controls whether the course has a curriculum to summarize. */
 export interface CourseProgressCardProps {
-  /** Course whose progress is shown. */
   course: EnrolledCourse;
+  showProgress?: boolean;
 }
 
-/**
- * Shows the overall mastery, the mastered subtopics, the solved exercises and the estimated time left.
- */
-export function CourseProgressCard({ course }: CourseProgressCardProps) {
-  const percent = course.mastery ?? 0;
-  return (
-    <Card style={styles.card}>
-      <View style={styles.row}>
-        <IconBox icon="bar_chart" size="sm" />
-        <View style={styles.titles}>
-          <Text variant="bodyMBold">Progreso general</Text>
-          <Text variant="bodyM" color="secondary">
-            {course.masteredSubtopicCount} de {course.subtopicCount} subtemas con dominio alto
-          </Text>
+/** Does not infer mastery or study time when the backend supplies neither. */
+export function CourseProgressCard({ course, showProgress = true }: CourseProgressCardProps) {
+  const teacher = course.teacherName ? `Docente: ${course.teacherName}` : 'Docente no disponible';
+  return <Card style={styles.card}>
+    <View style={styles.identity}>
+      <IconBox icon={course.icon} size="xl" tone="primary" style={styles.icon} />
+      <View style={styles.titles}>
+        <Text variant="headlineM" isHeading>{course.name}</Text>
+        <Text variant="bodyM" color="secondary"><Text variant="bodyM" color="secondary">{teacher}</Text>{` · Código ${course.code}`}</Text>
+      </View>
+    </View>
+    {showProgress && <>
+      <View style={styles.progress}>
+        <Text variant="display" color="brand" style={styles.percentage}>{course.mastery === null ? '—' : `${course.mastery} %`}</Text>
+        <View style={styles.progressCopy}>
+          <Text variant="bodyM" color="secondary">Progreso general · {course.masteredSubtopicCount} de {course.subtopicCount} subtemas con dominio alto</Text>
+          <ProgressBar value={course.mastery} tone="primary" label={`Progreso general en ${course.name}`} />
         </View>
-        <Text variant="headlineL" color="brand">
-          {percent}
-          <Text variant="bodyMBold" color="brand">
-            {' '}%
-          </Text>
-        </Text>
       </View>
-      <View accessibilityRole="progressbar" accessibilityLabel={`Progreso general en ${course.name}`} style={styles.track}>
-        <View style={[styles.fill, { width: `${percent}%` }]} />
+      <View style={styles.meta}>
+        <View style={styles.metaItem}><Icon name="menu_book" size="xs" color={colors.contentPrimary} /><Text variant="bodyM">{course.solvedExerciseCount} ejercicios resueltos</Text></View>
+        <View style={styles.metaItem}><Icon name="schedule" size="xs" color={colors.contentPrimary} /><Text variant="bodyM">{course.estimatedTimeLeft ? `${course.estimatedTimeLeft} estimadas restantes` : 'Tiempo no estimado'}</Text></View>
       </View>
-      <View style={styles.row}>
-        <View style={styles.meta}>
-          <Icon name="check_circle" size="xs" color={colors.secondaryStrong} />
-          <Text variant="labelS" color="secondary">
-            {course.solvedExerciseCount} ejercicios resueltos
-          </Text>
-        </View>
-        {course.estimatedTimeLeft ? <View style={styles.meta}>
-          <Icon name="timelapse" size="xs" color={colors.tertiaryStrong} />
-          <Text variant="labelS" color="secondary">
-            {course.estimatedTimeLeft} estimadas restantes
-          </Text>
-        </View> : null}
-      </View>
-    </Card>
-  );
+    </>}
+  </Card>;
 }
 
 const styles = StyleSheet.create({
-  card: { gap: spacing.md },
-  row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: spacing.md },
-  titles: { flex: 1 },
-  track: { height: 10, padding: 2, borderRadius: radius.full, backgroundColor: colors.primaryContainer },
-  fill: { height: '100%', borderRadius: radius.full, experimental_backgroundImage: gradients.progress },
-  meta: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
+  card: { borderWidth: 1, borderColor: colors.primaryPaleSoft, borderRadius: 24, padding: 18, gap: 14, experimental_backgroundImage: gradients.soft },
+  identity: { flexDirection: 'row', alignItems: 'center', gap: 14, minHeight: 82 }, icon: { backgroundColor: colors.white }, titles: { flex: 1, gap: 2 },
+  progress: { flexDirection: 'row', alignItems: 'flex-end', gap: 12, minHeight: 46 }, percentage: { minWidth: 62 }, progressCopy: { flex: 1, gap: 6 },
+  meta: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 12 }, metaItem: { flexDirection: 'row', alignItems: 'center', gap: 4 },
 });

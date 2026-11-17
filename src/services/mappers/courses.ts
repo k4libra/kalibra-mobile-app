@@ -43,20 +43,21 @@ export function mapCourse(
   progress: ProgressDto,
 ): EnrolledCourse {
   return {
+    term: dto.term ?? '',
     id: dto.courseId,
     name: dto.name,
     code: dto.code,
     teacherName: dto.teacherName ?? null,
-    faculty: '',
-    semester: '',
-    icon: 'menu_book',
+    faculty: dto.faculty ?? '',
+    semester: dto.semester ?? '',
+    icon: /algorit|programa|estructura/i.test(dto.name) ? 'account_tree' : /álgebra|algebra/i.test(dto.name) ? 'grid_on' : /cálculo|calculo/i.test(dto.name) ? 'functions' : 'menu_book',
     focus: dto.subtopics.map(item => item.name).join(' · '),
     mastery: progress.hasActivity
       ? averageMastery(progress.subtopics.map(item => item.mastery))
       : null,
     masteredSubtopicCount: progress.hasActivity
       ? progress.subtopics.filter(
-          item => item.mastery !== null && item.mastery >= 70,
+          item => item.mastery !== null && item.mastery > 70,
         ).length
       : 0,
     subtopicCount: dto.subtopics.length,
@@ -99,8 +100,8 @@ export function mapSubtopics(
         courseId: dto.courseId,
         order: item.displayOrder,
         name: item.name,
-        description: '',
-        icon: 'account_tree',
+        description: item.description ?? '',
+        icon: /árbol|arbol|grafo/i.test(item.name) ? 'account_tree' : /dinámi|dinami/i.test(item.name) ? 'layers' : /recurs|algorit/i.test(item.name) ? 'terminal' : /vector|matri|transform/i.test(item.name) ? 'grid_on' : 'functions',
         mastery: progress.hasActivity ? measured?.mastery ?? null : null,
         note:
           !progress.hasActivity ? 'Sin práctica'

@@ -1,96 +1,49 @@
-/**
- * Card of a course the student is enrolled in.
- *
- * @author G0nz4loQu3dena
- * @packageDocumentation
- */
-
+/** Compact enrolled course row with measured mastery and teacher identity. */
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
-import { Button, Card, Chip, IconBox, ProgressBar, Text, type TextColor } from '@/components/ui';
-import { colors, spacing } from '@/theme/tokens';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { Card, Chip, Icon, IconBox, ProgressBar, Text, type TextColor } from '@/components/ui';
+import { colors, radius } from '@/theme/tokens';
 import type { EnrolledCourse } from '@/types/course';
 import type { Tone } from '@/types/ui';
 
-// Accent of the card by progress: high progress is green, medium indigo and low amber.
-const courseTone = (mastery: number | null): Tone => (mastery === null ? 'neutral' : mastery >= 80 ? 'success' : mastery >= 65 ? 'primary' : 'warning');
-
-// Text color of the percentage for each accent.
-const PERCENT_COLOR: Record<Tone, TextColor> = {
-  primary: 'brand',
-  success: 'success',
-  warning: 'warning',
-  danger: 'danger',
-  neutral: 'muted',
-};
-
-/**
- * Props accepted by {@link EnrolledCourseCard}.
- */
+/** Props accepted by the course list card. */
 export interface EnrolledCourseCardProps {
-  /** Course to show. */
   course: EnrolledCourse;
-  /** Called when the student wants to keep practicing the course. */
   onContinue: (courseId: string) => void;
 }
 
-/**
- * Shows the progress of the student in a course and emits when they continue practicing.
- */
+const levelOf = (mastery: number | null): { tone: Tone; label: string; color: TextColor } => mastery === null
+  ? { tone: 'neutral', label: 'Sin práctica', color: 'secondary' }
+  : mastery > 70 ? { tone: 'success', label: 'Dominio Alto', color: 'success' }
+    : mastery >= 40 ? { tone: 'primary', label: 'Dominio Medio', color: 'brand' }
+      : { tone: 'warning', label: 'Dominio Bajo', color: 'warning' };
+
+/** Opens the enrolled course and preserves exact percentages only when supplied. */
 export function EnrolledCourseCard({ course, onContinue }: EnrolledCourseCardProps) {
-  const tone = courseTone(course.mastery);
-  const percent = course.mastery ?? 0;
-  return (
+  const level = levelOf(course.mastery);
+  return <Pressable accessibilityRole="button" accessibilityLabel={`Ver curso ${course.name}`} onPress={() => onContinue(course.id)}>
     <Card style={styles.card}>
-      <View style={styles.header}>
-        <IconBox icon={course.icon} tone={tone === 'neutral' ? 'primary' : tone} />
+      <View style={styles.row}>
+        <IconBox icon={course.icon} size="xl" tone="primary" />
         <View style={styles.titles}>
-          <View style={styles.titleRow}>
-            <Text variant="title" numberOfLines={1} style={styles.name}>
-              {course.name}
-            </Text>
-            <Text variant="bodyMBold" color={PERCENT_COLOR[tone]}>
-              {percent}%
-            </Text>
-          </View>
-          <Text variant="bodyM" color="secondary">
-            {course.focus}
-          </Text>
-          <Text variant="bodyM" color="secondary">
-            {course.teacherName ? `Docente: ${course.teacherName}` : 'Docente no disponible'}
-          </Text>
+          <Text variant="title">{course.name}</Text>
+          <Text variant="bodyM" color="secondary" numberOfLines={2}>{course.focus || `${course.subtopicCount} subtemas para practicar`}</Text>
+          <View style={styles.teacher}><Icon name="school" size="xs" color={colors.contentSecondary} /><Text variant="bodyM" color="secondary" style={styles.flex}>{course.teacherName ?? 'Docente no disponible'}</Text></View>
         </View>
+        <View style={styles.chevron}><Icon name="chevron_right" size="md" color={colors.contentSecondary} /></View>
       </View>
       <View style={styles.progress}>
-        <View style={styles.titleRow}>
-          {tone === 'success' ? (
-            <Chip label="¡Excelente ritmo!" tone="success" icon="bolt" />
-          ) : (
-            <Text variant="labelS" color="secondary">
-              {course.masteredSubtopicCount}/{course.subtopicCount} temas dominados
-            </Text>
-          )}
-          <Text variant="labelM">{percent}% completado</Text>
-        </View>
-        <ProgressBar value={course.mastery} tone={tone === 'warning' ? 'warning' : tone} label={`Progreso en ${course.name}`} />
+        <Chip label={level.label} icon="query_stats" tone={level.tone} />
+        <View style={styles.flex}><ProgressBar value={course.mastery} tone={level.tone} label={`Dominio en ${course.name}`} /></View>
+        <Text variant="bodyMBold" color={level.color}>{course.mastery === null ? '—' : `${course.mastery} %`}</Text>
       </View>
-      <Button
-        label="Continuar práctica"
-        icon="arrow_forward"
-        variant={tone === 'success' ? 'primary' : 'tonal'}
-        onPress={() => onContinue(course.id)}
-        style={tone === 'success' && styles.successButton}
-      />
+      <View style={styles.meta}><Icon name="check_circle" size="xs" color={colors.contentSecondary} /><Text variant="bodyM" color="secondary">{course.masteredSubtopicCount}/{course.subtopicCount} temas dominados</Text></View>
     </Card>
-  );
+  </Pressable>;
 }
 
 const styles = StyleSheet.create({
-  card: { gap: spacing.xl },
-  header: { flexDirection: 'row', gap: spacing.xl },
-  titles: { flex: 1, gap: spacing.xxs },
-  titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: spacing.md },
-  name: { flex: 1 },
-  progress: { gap: spacing.sm },
-  successButton: { backgroundColor: colors.secondaryStrong },
+  card: { padding: 14, borderRadius: 24, gap: 12 }, row: { flexDirection: 'row', alignItems: 'center', gap: 12 }, titles: { flex: 1, gap: 2 }, flex: { flex: 1 }, teacher: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  chevron: { width: 32, height: 32, borderRadius: radius.full, backgroundColor: colors.primarySubtle, alignItems: 'center', justifyContent: 'center' },
+  progress: { flexDirection: 'row', alignItems: 'center', gap: 8 }, meta: { flexDirection: 'row', alignItems: 'center', gap: 4 },
 });
