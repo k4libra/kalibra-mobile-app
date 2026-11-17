@@ -7,6 +7,7 @@
 
 import type { NavigatorScreenParams } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import type { CalibrationContext } from '@/types/calibration';
 
 /**
  * Tabs of the bottom navigation and their parameters.
@@ -28,7 +29,7 @@ export type RootStackParamList = {
   CourseSubtopics: { courseId: string };
   Invitations: undefined;
   EnrollmentConfirmed: { invitationId: string };
-  Exercise: { courseId: string; subtopicId: string };
+  Exercise: { courseId: string; calibration?: CalibrationContext } & ({ subtopicId: string; mode?: undefined } | { mode: 'EXPRESS'; subtopicId?: undefined });
   ExerciseResult: { attemptId: string };
 };
 
