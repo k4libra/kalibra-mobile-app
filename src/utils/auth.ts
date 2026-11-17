@@ -19,9 +19,9 @@ export const AUTH_MESSAGES: Record<AuthErrorCode, string> = {
   NOT_FOUND: 'No se encontró la información solicitada.',
   NO_EXERCISES: 'Aún no hay ejercicios aprobados para este subtema',
   CONFLICT: 'La información cambió. Actualiza e inténtalo nuevamente.',
-  SERVICE_UNAVAILABLE: 'Servicio no disponible por el momento',
-  NETWORK_ERROR: 'No se pudo conectar con el servidor. Revisa tu conexión e inténtalo nuevamente.',
-  UNKNOWN_ERROR: 'Ocurrió un error inesperado. Inténtalo nuevamente.',
+  SERVICE_UNAVAILABLE: 'Servicio no disponible por el momento. Inténtalo más tarde.',
+  NETWORK_ERROR: 'No se pudo conectar con el servidor. Revisa tu conexión e inténtalo más tarde.',
+  UNKNOWN_ERROR: 'No se pudo completar la operación. Inténtalo más tarde.',
 };
 /**
  * Recognizes institutional education domains.

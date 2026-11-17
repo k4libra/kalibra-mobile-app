@@ -30,7 +30,7 @@ export function SessionSegments({ total, outcomes = [], reached = 0 }: SessionSe
       {Array.from({ length: total }, (_, index) => {
         const outcome = outcomes[index];
         const color =
-          outcome === undefined ? (index < reached ? colors.primary : colors.primaryContainer) : outcome ? colors.secondaryStrong : colors.danger;
+          outcome === undefined ? (index < reached ? colors.primary : colors.primaryContainerSoft) : outcome ? colors.secondary : colors.danger;
         return <View key={index} style={[styles.segment, { backgroundColor: color }]} />;
       })}
     </View>

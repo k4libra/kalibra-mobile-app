@@ -2,13 +2,13 @@
  * Design tokens of the Kalibra design system for React Native.
  *
  * @remarks
- * Same values as the `@theme` block of `src/index.css` in kalibra-web-app; change both at the same time.
+ * Approved Kalibra UI v2 values shared by the student interface.
  *
  * @author G0nz4loQu3dena
  * @packageDocumentation
  */
 
-import { Platform, type TextStyle, type ViewStyle } from 'react-native';
+import { type TextStyle, type ViewStyle } from 'react-native';
 
 /**
  * Semantic colors of the design system.
@@ -30,11 +30,13 @@ export const colors = {
   secondaryText: '#00714d',
   secondaryContainer: '#6cf8bb',
   secondaryAccent: '#4edea3',
+  secondaryPale: '#ddfbee',
 
   tertiary: '#f59e0b',
   tertiaryStrong: '#684000',
   tertiaryContainer: '#ffb95f',
   tertiaryPale: '#ffddb8',
+  tertiarySubtle: '#fff3e2',
 
   danger: '#ba1a1a',
   dangerStrong: '#93000a',
@@ -42,16 +44,17 @@ export const colors = {
 
   surfaceBackground: '#faf8ff',
   surfaceCard: '#ffffff',
-  surfaceCode: '#283044',
-  onSurfaceCode: '#eef0ff',
+  surfaceCode: '#171b29',
+  onSurfaceCode: '#e2e4f5',
 
   contentPrimary: '#131b2e',
   contentSecondary: '#464555',
   contentMuted: '#777587',
   contentOnPrimary: '#ffffff',
 
-  lineSubtle: '#eaedff',
-  lineDefault: '#e2e7ff',
+  surfaceBorder: '#e6e4f2',
+  lineSubtle: '#e6e4f2',
+  lineDefault: '#e6e4f2',
 
   overlay: 'rgba(19, 27, 46, 0.4)',
 } as const;
@@ -68,7 +71,7 @@ export const spacing = {
   xl: 16,
   xxl: 20,
   xxxl: 24,
-  gutter: 21.5,
+  gutter: 16,
   pageTop: 64,
   pageBottom: 96,
 } as const;
@@ -80,6 +83,9 @@ export const radius = {
   sm: 8,
   md: 12,
   lg: 16,
+  xl: 20,
+  xxl: 24,
+  '2xl': 24,
   full: 9999,
 } as const;
 
@@ -91,9 +97,11 @@ export const fonts = {
   medium: 'PlusJakartaSans-Medium',
   semiBold: 'PlusJakartaSans-SemiBold',
   bold: 'PlusJakartaSans-Bold',
-  icons: 'MaterialSymbolsRounded-Regular',
-  // Menlo only ships with iOS; Android uses its system monospace family.
-  mono: Platform.select({ ios: 'Menlo', default: 'monospace' }),
+  extraBold: 'PlusJakartaSans-ExtraBold',
+  mono: 'RobotoMono-Regular',
+  monoMedium: 'RobotoMono-Medium',
+  monoBold: 'RobotoMono-Bold',
+  formula: 'STIXTwoText-Regular',
 } as const;
 
 /**
@@ -110,15 +118,18 @@ export const typography = {
   bodyMBold: { fontFamily: fonts.bold, fontSize: 12, lineHeight: 16, letterSpacing: 0.24 },
   labelM: { fontFamily: fonts.semiBold, fontSize: 10, lineHeight: 12, letterSpacing: 0.4 },
   labelS: { fontFamily: fonts.bold, fontSize: 10, lineHeight: 12, letterSpacing: 0.4 },
-  code: { fontFamily: fonts.mono, fontSize: 13, lineHeight: 20 },
+  brand: { fontFamily: fonts.extraBold, fontSize: 20, lineHeight: 28, letterSpacing: -0.4 },
+  formula: { fontFamily: fonts.formula, fontSize: 20, lineHeight: 30 },
+  code: { fontFamily: fonts.mono, fontSize: 12, lineHeight: 22 },
 } satisfies Record<string, TextStyle>;
 
 /**
  * Elevation styles (`Kalibra/Elevation *` effect styles).
  */
 export const shadows = {
-  card: { shadowColor: '#000000', shadowOpacity: 0.05, shadowRadius: 2, shadowOffset: { width: 0, height: 1 }, elevation: 1 },
-  raised: { shadowColor: '#000000', shadowOpacity: 0.1, shadowRadius: 4, shadowOffset: { width: 0, height: 2 }, elevation: 3 },
+  card: { shadowColor: '#4f45e5', shadowOpacity: 0.08, shadowRadius: 12, shadowOffset: { width: 0, height: 8 }, elevation: 2 },
+  iconButton: { shadowColor: '#4f45e5', shadowOpacity: 0.08, shadowRadius: 6, shadowOffset: { width: 0, height: 8 }, elevation: 2 },
+  raised: { shadowColor: '#000000', shadowOpacity: 0.1, shadowRadius: 2, shadowOffset: { width: 0, height: 2 }, elevation: 3 },
   floating: { shadowColor: '#000000', shadowOpacity: 0.1, shadowRadius: 6, shadowOffset: { width: 0, height: 4 }, elevation: 6 },
   nav: { shadowColor: '#000000', shadowOpacity: 0.04, shadowRadius: 12, shadowOffset: { width: 0, height: -2 }, elevation: 8 },
 } satisfies Record<string, ViewStyle>;
@@ -128,8 +139,9 @@ export const shadows = {
  */
 export const gradients = {
   primary: 'linear-gradient(159deg, #4f46e5 0%, #3525cd 50%, #3323cc 100%)',
-  success: 'linear-gradient(146deg, #6cf8bb 0%, #f2f3ff 50%, #ffffff 100%)',
-  danger: 'linear-gradient(146deg, #ffdad6 0%, #f2f3ff 50%, #ffffff 100%)',
+  success: 'linear-gradient(146deg, #ddfbee 0%, #f2f3ff 100%)',
+  danger: 'linear-gradient(146deg, #ffdad6 0%, #f2f3ff 100%)',
+  soft: 'linear-gradient(110deg, #eaedff 0%, #ddfbee 100%)',
   progress: 'linear-gradient(90deg, #4f46e5 0%, #3525cd 100%)',
 } as const;
 

@@ -45,6 +45,8 @@ export interface ConfirmDialogProps {
   onConfirm: () => void;
   /** Called when the user cancels or uses the back gesture. */
   onCancel: () => void;
+  /** Blocks both actions while the confirmed request is pending. */
+  isSubmitting?: boolean;
 }
 
 /**
@@ -66,14 +68,15 @@ export function ConfirmDialog({
   cancelLabel = 'Cancelar',
   onConfirm,
   onCancel,
+  isSubmitting = false,
 }: ConfirmDialogProps) {
   return (
-    <Modal visible={isVisible} transparent animationType="fade" onRequestClose={onCancel} statusBarTranslucent>
+    <Modal visible={isVisible} transparent animationType="fade" onRequestClose={() => { if (!isSubmitting) onCancel(); }} statusBarTranslucent>
       <View style={styles.backdrop}>
-        <View accessibilityViewIsModal style={styles.card}>
+        <View accessibilityViewIsModal style={styles.card}><View style={styles.handle} />
           <IconBox icon={icon} tone={tone} size="lg" style={styles.badge} />
           <View style={styles.text}>
-            <Text variant="headlineL" style={styles.center} isHeading>
+            <Text variant="headlineM" style={styles.center} isHeading>
               {title}
             </Text>
             <Text color="secondary" style={styles.center}>
@@ -81,8 +84,8 @@ export function ConfirmDialog({
             </Text>
           </View>
           <View style={styles.actions}>
-            <Button label={confirmLabel} icon={confirmIcon} variant={tone === 'danger' ? 'danger' : 'primary'} onPress={onConfirm} />
-            <Button label={cancelLabel} variant="neutral" onPress={onCancel} />
+            <Button label={confirmLabel} icon={confirmIcon} iconPosition="start" variant={tone === 'danger' ? 'danger' : 'primary'} loading={isSubmitting} onPress={onConfirm} />
+            <Button label={cancelLabel} variant="ghost" disabled={isSubmitting} onPress={onCancel} />
           </View>
         </View>
       </View>
@@ -91,10 +94,11 @@ export function ConfirmDialog({
 }
 
 const styles = StyleSheet.create({
-  backdrop: { flex: 1, justifyContent: 'center', padding: spacing.gutter, backgroundColor: colors.overlay },
-  card: { alignItems: 'center', gap: spacing.xl, padding: spacing.xxxl, borderRadius: radius.lg, backgroundColor: colors.surfaceCard, ...shadows.floating },
+  backdrop: { flex: 1, justifyContent: 'flex-end', backgroundColor: colors.overlay },
+  card: { alignItems: 'center', gap: 14, padding: spacing.xxxl, paddingTop: 30, paddingBottom: 28, borderTopLeftRadius: radius.xxl, borderTopRightRadius: radius.xxl, backgroundColor: colors.surfaceCard, ...shadows.floating },
   badge: { width: 56, height: 56, borderRadius: radius.lg },
-  text: { gap: spacing.md },
+  text: { gap: 14 },
   center: { textAlign: 'center' },
-  actions: { alignSelf: 'stretch', gap: spacing.md },
+  actions: { alignSelf: 'stretch', gap: 14 },
+  handle: { position: 'absolute', top: 12, width: 40, height: 4, borderRadius: 999, backgroundColor: colors.surfaceBorder },
 });

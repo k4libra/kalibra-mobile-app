@@ -7,8 +7,8 @@
 
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import { Card, Icon, MasteryRing, Text } from '@/components/ui';
-import { colors, radius, spacing } from '@/theme/tokens';
+import { Card, Chip, Icon, MasteryRing, Text } from '@/components/ui';
+import { colors, spacing } from '@/theme/tokens';
 import type { TextColor } from '@/components/ui';
 import type { CourseProgress } from '@/types/progress';
 import { HIGH_MASTERY_THRESHOLD, LOW_MASTERY_THRESHOLD } from '@/utils/mastery';
@@ -19,10 +19,10 @@ import { HIGH_MASTERY_THRESHOLD, LOW_MASTERY_THRESHOLD } from '@/utils/mastery';
 export type ProgressBand = 'optimal' | 'steady' | 'reinforce';
 
 // Status line, level name and color of each band.
-const BAND: Record<ProgressBand, { status: string; level: string; color: TextColor; dot: string }> = {
-  optimal: { status: 'EN TRAYECTORIA ÓPTIMA', level: 'Avanzado', color: 'success', dot: colors.secondaryStrong },
-  steady: { status: 'EN TRAYECTORIA ÓPTIMA', level: 'Intermedio Avanzado', color: 'success', dot: colors.secondaryStrong },
-  reinforce: { status: 'NECESITA REFUERZO', level: 'Inicial', color: 'danger', dot: colors.danger },
+const BAND: Record<ProgressBand, { status: string; level: string; color: TextColor }> = {
+  optimal: { status: 'EN TRAYECTORIA ÓPTIMA', level: 'Avanzado', color: 'success' },
+  steady: { status: 'EN TRAYECTORIA ÓPTIMA', level: 'Intermedio Avanzado', color: 'success' },
+  reinforce: { status: 'NECESITA REFUERZO', level: 'Inicial', color: 'danger' },
 };
 
 /**
@@ -32,7 +32,7 @@ const BAND: Record<ProgressBand, { status: string; level: string; color: TextCol
  * @returns `optimal` from the high threshold, `steady` from the low threshold, otherwise `reinforce`.
  */
 export function progressBand(mastery: number): ProgressBand {
-  if (mastery >= HIGH_MASTERY_THRESHOLD) return 'optimal';
+  if (mastery > HIGH_MASTERY_THRESHOLD) return 'optimal';
   if (mastery >= LOW_MASTERY_THRESHOLD) return 'steady';
   return 'reinforce';
 }
@@ -55,12 +55,7 @@ export function ProgressOverviewCard({ progress }: ProgressOverviewCardProps) {
     <Card style={styles.card}>
       <View style={styles.row}>
         <View style={styles.flex}>
-          <View style={styles.status}>
-            <View style={[styles.dot, { backgroundColor: band.dot }]} />
-            <Text variant="labelS" color={band.color}>
-              {band.status}
-            </Text>
-          </View>
+          <Chip label={band.status} icon="trending_up" tone={mastery < 40 ? 'danger' : 'success'} />
           <Text variant="headlineL">{band.level}</Text>
           <Text variant="bodyM" color="secondary">
             Has resuelto {progress.course.solvedExerciseCount} ejercicios en este curso.
@@ -88,5 +83,4 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.lg },
   flex: { flex: 1, gap: spacing.xs },
   status: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-  dot: { width: 6, height: 6, borderRadius: radius.full },
 });

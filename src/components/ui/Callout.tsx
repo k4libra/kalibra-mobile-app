@@ -13,15 +13,15 @@ import { Icon } from './Icon';
 import { Text } from './Text';
 const TONE: Record<Tone, { background: string; content: string }> = {
   primary: { background: colors.primaryContainerSoft, content: colors.primaryStrong },
-  success: { background: colors.secondaryContainer, content: colors.secondaryStrong },
-  warning: { background: colors.tertiaryPale, content: colors.tertiaryStrong },
+  success: { background: colors.secondaryPale, content: colors.secondaryStrong },
+  warning: { background: colors.tertiarySubtle, content: colors.tertiaryStrong },
   danger: { background: colors.dangerContainer, content: colors.dangerStrong },
   neutral: { background: colors.primarySubtle, content: colors.contentSecondary },
 };
 const BACKGROUND: Record<Tone, ViewStyle> = Object.fromEntries(Object.entries(TONE).map(([tone, palette]) => [tone, { backgroundColor: palette.background }])) as Record<Tone, ViewStyle>;
 const CONTENT: Record<Tone, TextStyle> = Object.fromEntries(Object.entries(TONE).map(([tone, palette]) => [tone, { color: palette.content }])) as Record<Tone, TextStyle>;
 const VARIANT: Record<CalloutVariant, ViewStyle> = {
-  card: { padding: spacing.xl, borderRadius: radius.lg, gap: spacing.md },
+  card: { padding: 14, borderRadius: radius.lg, gap: 12 },
   inline: { paddingHorizontal: spacing.md, paddingVertical: spacing.sm, borderRadius: radius.sm, gap: spacing.sm },
 };
 /** Props accepted by {@link Callout}. */
@@ -65,10 +65,10 @@ export interface CalloutProps {
 export function Callout({ title, description, icon, iconTone, tone = 'primary', variant = 'card', onDismiss, dismissLabel = 'Descartar aviso' }: CalloutProps) {
   const palette = TONE[tone];
   return <View accessibilityRole={tone === 'danger' ? 'alert' : undefined} style={[styles.row, VARIANT[variant], BACKGROUND[tone]]}>
-    {icon && <Icon name={icon} size={variant === 'inline' ? 'xs' : '2xl'} color={TONE[iconTone ?? tone].content} />}
+    {icon && (variant === 'card' ? <View style={styles.tile}><Icon name={icon} size="lg" color={TONE[iconTone ?? tone].content} /></View> : <Icon name={icon} size="xs" color={TONE[iconTone ?? tone].content} />)}
     <View style={styles.copy}>{title && <Text variant={variant === 'inline' ? 'bodyMBold' : 'labelL'} style={tone === 'primary' ? styles.primaryTitle : CONTENT[tone]}>{title}</Text>}
       <Text variant="bodyM" style={tone === 'primary' ? styles.primaryDescription : CONTENT[tone]}>{description}</Text></View>
-    {onDismiss && <Pressable accessibilityRole="button" accessibilityLabel={dismissLabel} onPress={onDismiss} style={styles.dismiss}><Icon name="close" color={palette.content} /></Pressable>}
+    {onDismiss && <Pressable accessibilityRole="button" accessibilityLabel={dismissLabel} onPress={onDismiss} style={styles.dismiss}><Icon name="close" size="md" color={palette.content} /></Pressable>}
   </View>;
 }
-const styles = StyleSheet.create({ primaryTitle: { color: colors.contentPrimary }, primaryDescription: { color: colors.contentSecondary }, row: { flexDirection: 'row', alignItems: 'center' }, copy: { flex: 1, gap: spacing.xs }, dismiss: { width: TOUCH_TARGET, height: TOUCH_TARGET, alignItems: 'center', justifyContent: 'center', marginRight: -spacing.md, alignSelf: 'flex-start' } });
+const styles = StyleSheet.create({ primaryTitle: { color: colors.contentPrimary }, primaryDescription: { color: colors.contentSecondary }, row: { flexDirection: 'row', alignItems: 'center' }, copy: { flex: 1, gap: 2 }, tile: { width: 40, height: 40, borderRadius: 16, backgroundColor: colors.white, alignItems: 'center', justifyContent: 'center', alignSelf: 'flex-start' }, dismiss: { width: 24, minHeight: TOUCH_TARGET, alignItems: 'center', justifyContent: 'center', marginRight: -4, marginTop: -10, alignSelf: 'flex-start' } });

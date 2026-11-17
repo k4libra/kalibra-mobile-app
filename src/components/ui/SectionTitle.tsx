@@ -31,11 +31,11 @@ export interface SectionTitleProps {
 export function SectionTitle({ title, caption }: SectionTitleProps) {
   return (
     <View style={styles.row}>
-      <Text variant="title" isHeading>
+      <Text variant="headlineM" isHeading>
         {title}
       </Text>
       {caption && (
-        <Text variant="labelM" color="secondary">
+        <Text variant="bodyMBold" color="brand">
           {caption}
         </Text>
       )}

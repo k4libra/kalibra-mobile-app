@@ -14,18 +14,18 @@ import { Text } from './Text';
 
 // Background and content color of each variant.
 const VARIANT: Record<ButtonVariant, { background: string; content: string }> = {
-  primary: { background: colors.primaryStrong, content: colors.contentOnPrimary },
-  tonal: { background: colors.primaryContainer, content: colors.primaryStrong },
+  primary: { background: colors.primary, content: colors.contentOnPrimary },
+  tonal: { background: colors.primaryContainerSoft, content: colors.primaryStrong },
   neutral: { background: colors.primaryContainerSoft, content: colors.contentPrimary },
-  danger: { background: colors.danger, content: colors.contentOnPrimary },
-  'danger-soft': { background: colors.primarySubtle, content: colors.danger },
-  ghost: { background: colors.transparent, content: colors.primaryStrong },
+  danger: { background: colors.dangerContainer, content: colors.danger },
+  'danger-soft': { background: colors.dangerContainer, content: colors.danger },
+  ghost: { background: colors.white, content: colors.contentPrimary },
 };
 
 // Height and padding of each size.
 const SIZE: Record<ButtonSize, ViewStyle> = {
-  md: { minHeight: 52, paddingHorizontal: spacing.xxl, borderRadius: radius.md },
-  sm: { minHeight: 44, paddingHorizontal: spacing.lg, borderRadius: radius.md },
+  md: { minHeight: 52, paddingHorizontal: spacing.xxxl, borderRadius: radius.full },
+  sm: { minHeight: 44, paddingHorizontal: spacing.xxxl, borderRadius: radius.full },
 };
 
 /**
@@ -107,6 +107,7 @@ export function Button({
         SIZE[size],
         { backgroundColor: palette.background },
         variant === 'primary' && shadows.raised,
+        variant === 'ghost' && styles.border,
         (pressed || disabled) && styles.dimmed,
         style,
       ]}
@@ -125,6 +126,7 @@ export function Button({
 
 const styles = StyleSheet.create({
   base: { alignItems: 'center', justifyContent: 'center' },
-  content: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  content: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+  border: { borderWidth: 1, borderColor: colors.surfaceBorder },
   dimmed: { opacity: 0.6 },
 });

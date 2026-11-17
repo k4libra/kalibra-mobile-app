@@ -30,7 +30,7 @@ export function AuthHeader({ title, subtitle, isRegistration = false }: AuthHead
     <Text color="secondary">{subtitle}</Text>
     <Chip label="Acceso para +50 universidades asociadas" tone="success" icon="verified" />
   </View> : <View style={styles.signIn}>
-    <View style={styles.brandRow}><View style={styles.row}><BrandMark /><Text variant="headlineL">Kalibra</Text></View><Chip label="Red Universitaria Activa" icon="fiber_manual_record" /></View>
+    <View style={styles.brandRow}><View style={styles.row}><BrandMark /><Text variant="headlineL">Kalibra</Text></View><Chip label="Red Universitaria Activa" icon="verified" /></View>
     <View><Text variant="display" isHeading>{title}</Text><Text color="secondary">{subtitle}</Text></View>
   </View>;
 }

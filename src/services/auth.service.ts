@@ -132,7 +132,12 @@ export const authService: AuthServiceContract = {
     if (revision !== getSessionRevision())
       throw new ApiError(401, 'UNAUTHORIZED');
     return {
-      user: session.user,
+      user: {
+        ...session.user,
+        term: courses.find(course => course.term?.trim())?.term,
+        faculty: courses.find(course => course.faculty?.trim())?.faculty ?? '',
+        semester: courses.find(course => course.semester?.trim())?.semester ?? '',
+      },
       preferences: mapPreferences(preferences),
       stats: {
         solvedExerciseCount: activity.reduce(

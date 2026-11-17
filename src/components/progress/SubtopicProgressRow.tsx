@@ -20,7 +20,7 @@ const LEVEL: Record<Tone, { label: string; color: TextColor }> = {
   warning: { label: 'Nivel Medio', color: 'warning' },
   danger: { label: 'Nivel Bajo', color: 'danger' },
   neutral: { label: 'Sin práctica', color: 'muted' },
-  primary: { label: 'Nivel', color: 'brand' },
+  primary: { label: 'Nivel Medio', color: 'brand' },
 };
 
 /**
@@ -47,7 +47,7 @@ export function SubtopicProgressRow({ subtopic }: SubtopicProgressRowProps) {
           </Text>
           <Text variant="labelM" color={level.color}>
             {level.label}
-            {subtopic.attemptCount > 0 ? subtopic.correctCount === null ? ` • ${subtopic.attemptCount} resueltos` : ` • ${subtopic.correctCount}/${subtopic.attemptCount} correctos` : ''}
+            {subtopic.attemptCount > 0 ? subtopic.correctCount === null ? ` · ${subtopic.attemptCount} resueltos` : ` · ${subtopic.correctCount}/${subtopic.attemptCount} correctos` : ''}
           </Text>
         </View>
         <Text variant="headlineM">{subtopic.mastery === null ? '—' : `${subtopic.mastery}%`}</Text>

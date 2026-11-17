@@ -7,8 +7,8 @@
 
 import React from 'react';
 import { Pressable, StyleSheet, View, type ViewStyle } from 'react-native';
-import { colors, radius, TOUCH_TARGET } from '@/theme/tokens';
-const TRACK: Record<'on' | 'off', ViewStyle> = { on: { backgroundColor: colors.primary }, off: { backgroundColor: colors.primaryContainer } };
+import { colors, radius, shadows } from '@/theme/tokens';
+const TRACK: Record<'on' | 'off', ViewStyle> = { on: { backgroundColor: colors.primary }, off: { backgroundColor: colors.surfaceBorder } };
 const THUMB: Record<'on' | 'off', ViewStyle> = { on: { alignSelf: 'flex-end' }, off: { alignSelf: 'flex-start' } };
 /** Props accepted by {@link Toggle}. */
 export interface ToggleProps {
@@ -35,8 +35,8 @@ export interface ToggleProps {
 export function Toggle({ label, value, onValueChange, disabled = false }: ToggleProps) {
   const state = value ? 'on' : 'off';
   return <Pressable accessibilityRole="switch" accessibilityLabel={label} accessibilityState={{ checked: value, disabled }} disabled={disabled}
-    onPress={() => onValueChange(!value)} style={styles.target}>
+    onPress={() => onValueChange(!value)} hitSlop={8} style={styles.target}>
     <View style={[styles.track, TRACK[state]]}><View style={[styles.thumb, THUMB[state]]} /></View>
   </Pressable>;
 }
-const styles = StyleSheet.create({ target: { width: 48, minHeight: TOUCH_TARGET, alignItems: 'center', justifyContent: 'center' }, track: { width: 48, height: 24, borderRadius: radius.full, padding: 2 }, thumb: { width: 20, height: 20, borderRadius: radius.full, backgroundColor: colors.white } });
+const styles = StyleSheet.create({ target: { width: 48, height: 28, alignItems: 'center', justifyContent: 'center' }, track: { width: 48, height: 28, borderRadius: radius.full, padding: 3 }, thumb: { width: 22, height: 22, borderRadius: radius.full, backgroundColor: colors.white, ...shadows.card } });

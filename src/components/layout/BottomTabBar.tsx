@@ -8,14 +8,13 @@
 import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Icon, Text } from '@/components/ui';
-import { colors, shadows, spacing, TOUCH_TARGET } from '@/theme/tokens';
+import { colors, radius, shadows, spacing, TOUCH_TARGET } from '@/theme/tokens';
 import type { IconName } from '@/types/ui';
 
 // Label and icon of each tab, by route name.
 const TABS: Record<string, { label: string; icon: IconName }> = {
-  Courses: { label: 'Cursos', icon: 'school' },
+  Courses: { label: 'Cursos', icon: 'menu_book' },
   Progress: { label: 'Progreso', icon: 'trending_up' },
   History: { label: 'Historial', icon: 'history' },
   Profile: { label: 'Perfil', icon: 'person' },
@@ -33,9 +32,8 @@ const TABS: Record<string, { label: string; icon: IconName }> = {
  * ```
  */
 export function BottomTabBar({ state, navigation }: BottomTabBarProps) {
-  const insets = useSafeAreaInsets();
   return (
-    <View accessibilityRole="tablist" style={[styles.bar, { paddingBottom: Math.max(insets.bottom, spacing.md) }]}>
+    <View accessibilityRole="tablist" style={styles.bar}>
       {state.routes.map((route, index) => {
         const tab = TABS[route.name];
         const isActive = state.index === index;
@@ -52,8 +50,8 @@ export function BottomTabBar({ state, navigation }: BottomTabBarProps) {
             }}
             style={styles.tab}
           >
-            <Icon name={tab.icon} size="xl" color={tint} />
-            <Text variant="labelS" style={{ color: tint }}>
+            <View style={[styles.holder, isActive && styles.active]}><Icon name={tab.icon} size="xl" color={tint} /></View>
+            <Text variant={isActive ? 'bodyMBold' : 'bodyM'} style={{ color: tint }}>
               {tab.label}
             </Text>
           </Pressable>
@@ -64,6 +62,8 @@ export function BottomTabBar({ state, navigation }: BottomTabBarProps) {
 }
 
 const styles = StyleSheet.create({
-  bar: { flexDirection: 'row', paddingTop: spacing.md, paddingHorizontal: spacing.md, backgroundColor: colors.surfaceBackground, ...shadows.nav },
+  bar: { position: 'absolute', bottom: 16, left: 16, right: 16, height: 68, borderRadius: radius.xxl, borderWidth: 1, borderColor: colors.surfaceBorder, flexDirection: 'row', paddingHorizontal: 12, backgroundColor: colors.white, ...shadows.nav },
+  holder: { width: 52, height: 30, borderRadius: radius.full, alignItems: 'center', justifyContent: 'center' },
+  active: { backgroundColor: colors.primaryContainerSoft },
   tab: { flex: 1, minHeight: TOUCH_TARGET, alignItems: 'center', justifyContent: 'center', gap: spacing.xxs },
 });

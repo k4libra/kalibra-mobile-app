@@ -14,11 +14,11 @@ import { Text } from './Text';
 
 // Background and content color of each tone.
 const TONE: Record<Tone, { background: string; content: string }> = {
-  primary: { background: colors.primaryContainer, content: colors.contentSecondary },
-  success: { background: colors.secondaryContainer, content: colors.secondaryText },
-  warning: { background: colors.tertiaryPale, content: colors.tertiaryStrong },
+  primary: { background: colors.primaryContainerSoft, content: colors.primary },
+  success: { background: colors.secondaryPale, content: colors.secondaryText },
+  warning: { background: colors.tertiarySubtle, content: colors.tertiaryStrong },
   danger: { background: colors.dangerContainer, content: colors.dangerStrong },
-  neutral: { background: colors.primaryContainerSoft, content: colors.contentSecondary },
+  neutral: { background: colors.primarySubtle, content: colors.contentPrimary },
 };
 
 /**
@@ -52,7 +52,7 @@ export function Chip({ label, tone = 'primary', icon, style }: ChipProps) {
   return (
     <View style={[styles.chip, { backgroundColor: palette.background }, style]}>
       {icon && <Icon name={icon} size="xs" color={palette.content} />}
-      <Text variant="labelS" style={{ color: palette.content }}>
+      <Text variant="bodyMBold" style={{ color: palette.content }}>
         {label}
       </Text>
     </View>
@@ -64,9 +64,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     alignSelf: 'flex-start',
-    gap: spacing.xs,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xxs,
+    gap: spacing.sm,
+    paddingLeft: 10,
+    paddingRight: 12,
+    paddingVertical: 5,
     borderRadius: radius.full,
   },
 });

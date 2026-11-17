@@ -1,49 +1,14 @@
-/**
- * Collapsible hint of an exercise.
- *
- * @author G0nz4loQu3dena
- * @packageDocumentation
- */
-
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
-import { Icon, Text } from '@/components/ui';
-import { colors, radius, spacing } from '@/theme/tokens';
-
-/**
- * Props accepted by {@link HintToggle}.
- */
-export interface HintToggleProps {
-  /** Hint revealed when the student opens the toggle. */
-  hint: string;
-}
-
-/**
- * Renders a row that reveals the hint of the exercise when the student taps it.
- */
+import { Icon, IconBox, Text } from '@/components/ui';
+import { colors } from '@/theme/tokens';
+export interface HintToggleProps { hint: string }
 export function HintToggle({ hint }: HintToggleProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityState={{ expanded: isOpen }}
-      onPress={() => setIsOpen(open => !open)}
-      style={styles.box}
-    >
-      <View style={styles.row}>
-        <Icon name="lightbulb" size="sm" color={colors.contentSecondary} />
-        <Text variant="bodyM" color="secondary" style={styles.flex}>
-          ¿Necesitas una pista?
-        </Text>
-        <Icon name={isOpen ? 'expand_less' : 'expand_more'} size="sm" color={colors.contentSecondary} />
-      </View>
-      {isOpen && <Text variant="bodyM">{hint}</Text>}
-    </Pressable>
-  );
+  const [isOpen, setOpen] = useState(false);
+  return <View style={styles.box}><Pressable accessibilityRole="button" accessibilityLabel="¿Necesitas una pista?" accessibilityState={{ expanded: isOpen }} onPress={() => setOpen(value => !value)} style={styles.row}>
+    <IconBox icon="lightbulb" tone="warning" size="md" /><Text variant="labelL" style={styles.flex}>¿Necesitas una pista?</Text>
+    <View style={styles.chevron}><Icon name={isOpen ? 'expand_less' : 'chevron_right'} color={colors.contentSecondary} /></View>
+  </Pressable>{isOpen && <Text variant="bodyM" color="secondary" style={styles.hint}>{hint}</Text>}</View>;
 }
-
-const styles = StyleSheet.create({
-  box: { gap: spacing.md, paddingHorizontal: spacing.lg, paddingVertical: spacing.md, borderRadius: radius.md, backgroundColor: colors.primarySubtle },
-  row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
-  flex: { flex: 1 },
-});
+const styles = StyleSheet.create({ box: { borderRadius: 20, backgroundColor: colors.white }, row: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14 }, flex: { flex: 1 },
+  chevron: { width: 32, height: 32, borderRadius: 16, backgroundColor: colors.primarySubtle, alignItems: 'center', justifyContent: 'center' }, hint: { paddingHorizontal: 16, paddingBottom: 16 } });

@@ -19,6 +19,8 @@ export interface AuthUser {
   email: string;
   /** Access role of the account. */
   role: AuthRole;
+  /** Academic term supplied by an enrolled course. */
+  term?: string | null;
   /** Faculty label; empty before enrollment. */
   faculty: string;
   /** Semester label; empty before enrollment. */

@@ -17,7 +17,7 @@ export interface MomentumCardProps {
   /** Exercises solved across every course. */
   solvedExerciseCount: number;
   /** Average mastery across every course, from 0 to 100. */
-  averageMastery: number;
+  averageMastery: number | null;
 }
 
 /**
@@ -41,7 +41,7 @@ export function MomentumCard({ solvedExerciseCount, averageMastery }: MomentumCa
         </Text>
       </View>
       <Text variant="bodyM" style={styles.pale}>
-        {averageMastery} % de dominio promedio
+        {averageMastery === null ? 'Dominio por estimar' : `${averageMastery} % de dominio promedio`}
       </Text>
     </View>
   );

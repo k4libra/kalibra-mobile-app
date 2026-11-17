@@ -1,87 +1,32 @@
-/**
- * Top bar of the student app.
- *
- * @author G0nz4loQu3dena
- * @packageDocumentation
- */
-
-import React from 'react';
+import React, { useContext } from 'react';
 import { Image, Pressable, StyleSheet, View, type ImageSourcePropType } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Icon, Text } from '@/components/ui';
-import { colors, radius, shadows, spacing, TOUCH_TARGET } from '@/theme/tokens';
-
-// Brand mark bundled with the app.
-const LOGO = require('@/assets/images/logo.png');
-
-/**
- * Props accepted by {@link AppHeader}.
- */
+import { CountBadge, IconButton, Text } from '@/components/ui';
+import { AuthContext } from '@/context/AuthContext';
+import { colors, radius, shadows } from '@/theme/tokens';
+import { initials } from '@/utils/identity';
+import { BrandMark } from './BrandMark';
 export interface AppHeaderProps {
-  /** Screen title; when omitted the header shows the brand name (tab screens). */
-  title?: string;
-  /** Called when the user taps back; when omitted the back button is hidden. */
-  onBack?: () => void;
-  /** Called when the user taps the notifications bell; when omitted the bell is hidden. */
-  onNotifications?: () => void;
-  /** Called when the user taps the avatar. */
-  onProfile?: () => void;
-  /** Photo of the signed-in student. */
-  avatar?: ImageSourcePropType;
+  title?: string; onBack?: () => void; onNotifications?: () => void;
+  onProfile?: () => void; avatar?: ImageSourcePropType; greeting?: string;
+  subtitle?: string; notificationCount?: number;
 }
-
-/**
- * Renders the brand, the screen title and the header actions, below the status bar.
- *
- * @example
- * ```tsx
- * <AppHeader title="Subtemas" onBack={navigation.goBack} avatar={student.avatar} />
- * ```
- */
-export function AppHeader({ title, onBack, onNotifications, onProfile, avatar }: AppHeaderProps) {
+/** Home, back and brand variants share the same 64-point top bar. */
+export function AppHeader({ title, onBack, onNotifications, onProfile, avatar, greeting, subtitle, notificationCount = 0 }: AppHeaderProps) {
   const insets = useSafeAreaInsets();
-  return (
-    <View style={[styles.header, { paddingTop: insets.top }]}>
-      <View style={styles.row}>
-        <View style={styles.side}>
-          {onBack && (
-            <Pressable accessibilityRole="button" accessibilityLabel="Volver" onPress={onBack} hitSlop={8} style={styles.iconButton}>
-              <Icon name="chevron_left" size="2xl" color={colors.contentPrimary} />
-            </Pressable>
-          )}
-          <Image source={LOGO} style={title ? styles.logoSmall : styles.logo} accessibilityIgnoresInvertColors />
-          {!title && <Text variant="headlineM">Kalibra</Text>}
-        </View>
-        {title && (
-          <Text variant="title" numberOfLines={1} style={styles.title} isHeading>
-            {title}
-          </Text>
-        )}
-        <View style={[styles.side, styles.end]}>
-          {onNotifications && (
-            <Pressable accessibilityRole="button" accessibilityLabel="Notificaciones" onPress={onNotifications} style={styles.iconButton}>
-              <Icon name="notifications" size="xl" color={colors.contentPrimary} />
-            </Pressable>
-          )}
-          {avatar && (
-            <Pressable accessibilityRole="button" accessibilityLabel="Mi perfil" onPress={onProfile} style={styles.iconButton}>
-              <Image source={avatar} style={styles.avatar} />
-            </Pressable>
-          )}
-        </View>
-      </View>
-    </View>
-  );
+  const session = useContext(AuthContext)?.session;
+  const profile = (size: number) => <Pressable accessibilityRole="button" accessibilityLabel="Mi perfil" onPress={onProfile}
+    style={[styles.avatar, { width: size, height: size }]}>
+    {avatar ? <Image source={avatar} style={styles.photo} /> : <Text variant="bodyMBold" color="brand">{initials(session?.user.fullName ?? '')}</Text>}
+  </Pressable>;
+  return <View style={[styles.header, { paddingTop: insets.top }]}><View style={styles.row}>
+    {greeting ? <><View style={styles.home}>{profile(44)}<View style={styles.copy}><Text variant="headlineM">{greeting}</Text><Text variant="bodyM" color="secondary">{subtitle}</Text></View></View>
+      <View><IconButton name="notifications" label="Notificaciones" onPress={onNotifications} />{notificationCount > 0 && <View style={styles.badge}><CountBadge count={notificationCount} /></View>}</View></>
+      : title ? <><IconButton name="arrow_back" label="Volver" onPress={onBack} /><Text variant="title" isHeading style={styles.title}>{title}</Text>{profile(40)}</>
+        : <><View style={styles.brand}><BrandMark /><Text variant="brand">Kalibra</Text></View>{profile(40)}</>}
+  </View></View>;
 }
-
-const styles = StyleSheet.create({
-  header: { backgroundColor: colors.surfaceBackground, ...shadows.card },
-  row: { height: 64, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: spacing.xxl },
-  side: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, minWidth: 88 },
-  end: { justifyContent: 'flex-end', gap: spacing.xs },
-  title: { flex: 1, textAlign: 'center' },
-  iconButton: { width: TOUCH_TARGET, height: TOUCH_TARGET, alignItems: 'center', justifyContent: 'center', marginHorizontal: -spacing.md },
-  logo: { width: 32, height: 32 },
-  logoSmall: { width: 28, height: 28 },
-  avatar: { width: 32, height: 32, borderRadius: radius.full },
-});
+const styles = StyleSheet.create({ header: { backgroundColor: 'transparent' }, row: { height: 64, paddingHorizontal: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
+  home: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 12 }, copy: { flex: 1, gap: 2 }, brand: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  title: { flex: 1, textAlign: 'center' }, avatar: { borderRadius: radius.full, borderWidth: 2, borderColor: colors.white, backgroundColor: colors.primaryContainerSoft, alignItems: 'center', justifyContent: 'center', ...shadows.card },
+  photo: { width: '100%', height: '100%', borderRadius: radius.full }, badge: { position: 'absolute', top: -4, right: -4 } });

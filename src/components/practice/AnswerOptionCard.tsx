@@ -8,7 +8,8 @@
 import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Icon, Text } from '@/components/ui';
-import { colors, radius, shadows, spacing } from '@/theme/tokens';
+import { colors, fonts, radius, shadows, spacing } from '@/theme/tokens';
+import { readableFormula } from './FormulaBlock';
 import type { AnswerOption } from '@/types/exercise';
 
 /**
@@ -19,6 +20,8 @@ export interface AnswerOptionCardProps {
   option: AnswerOption;
   /** Whether the option is the current choice. */
   isSelected: boolean;
+  disabled?: boolean;
+  isFormula?: boolean;
   /** Called with the option id when the student picks it. */
   onSelect: (optionId: string) => void;
 }
@@ -26,11 +29,12 @@ export interface AnswerOptionCardProps {
 /**
  * Renders an option as a radio card with its letter, value and note, and emits when the student picks it.
  */
-export function AnswerOptionCard({ option, isSelected, onSelect }: AnswerOptionCardProps) {
+export function AnswerOptionCard({ option, isSelected, onSelect, disabled = false, isFormula = false }: AnswerOptionCardProps) {
   return (
     <Pressable
       accessibilityRole="radio"
-      accessibilityState={{ checked: isSelected }}
+      accessibilityState={{ checked: isSelected, disabled }}
+      disabled={disabled}
       accessibilityLabel={`Opción ${option.letter}: ${option.value}`}
       onPress={() => onSelect(option.id)}
       style={[styles.card, isSelected && styles.selected]}
@@ -41,24 +45,21 @@ export function AnswerOptionCard({ option, isSelected, onSelect }: AnswerOptionC
         </Text>
       </View>
       <View style={styles.text}>
-        <Text variant="headlineM">{option.value}</Text>
-        <Text variant="labelM" color="secondary">
-          {option.hint}
-        </Text>
+        <Text variant="title" style={isFormula && styles.formula}>{isFormula ? readableFormula(option.value) : option.value}</Text>
+        {option.hint ? <Text variant="bodyM" color="secondary">{option.hint}</Text> : null}
       </View>
-      <View style={[styles.radio, isSelected && styles.radioSelected]}>
-        {isSelected && <Icon name="check" size="sm" color={colors.white} />}
-      </View>
+      <Icon name={isSelected ? 'check_circle' : 'radio_button_unchecked'} size="lg" color={isSelected ? colors.primary : colors.surfaceBorder} />
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  card: { flexDirection: 'row', alignItems: 'center', gap: spacing.lg, padding: spacing.xl, borderRadius: radius.lg, backgroundColor: colors.surfaceCard, ...shadows.card },
-  selected: { backgroundColor: colors.primaryPaleSoft, ...shadows.floating },
-  letter: { width: 32, height: 32, borderRadius: radius.full, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.primaryContainerSoft },
-  letterSelected: { backgroundColor: colors.primaryStrong },
+  card: { flexDirection: 'row', alignItems: 'center', gap: spacing.lg, padding: spacing.xl, borderRadius: radius.lg, backgroundColor: colors.surfaceCard, borderWidth: 1, borderColor: colors.surfaceBorder, ...shadows.card },
+  selected: { backgroundColor: colors.primaryContainerSoft, borderWidth: 1.5, borderColor: colors.primary },
+  letter: { width: 36, height: 36, borderRadius: radius.md, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.primaryContainerSoft },
+  formula: { fontFamily: fonts.formula, fontSize: 20, lineHeight: 28 },
+  letterSelected: { backgroundColor: colors.primary },
   text: { flex: 1 },
   radio: { width: 24, height: 24, borderRadius: radius.full, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.primaryContainer },
-  radioSelected: { backgroundColor: colors.primaryStrong },
+  radioSelected: { backgroundColor: colors.primary },
 });

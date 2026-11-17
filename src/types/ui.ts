@@ -39,7 +39,7 @@ export type ButtonSize = 'md' | 'sm';
 export type Tone = 'primary' | 'success' | 'warning' | 'danger' | 'neutral';
 
 /**
- * Material Symbols Rounded ligatures used by the product.
+ * Stable semantic icon names (rendered with Lucide) used by the product.
  *
  * @remarks
  * Add a name here before using a new icon so every call site stays typed.
@@ -137,7 +137,11 @@ export type IconName =
   | 'alarm'
   | 'power_settings_new'
   | 'menu_book'
-  | 'fiber_manual_record';
+  | 'visibility_off'
+  | 'inbox'
+  | 'layers'
+  | 'target'
+  | 'trending_down';
 
 /** Height presets for text inputs. */
 export type TextFieldVariant = 'compact' | 'regular';

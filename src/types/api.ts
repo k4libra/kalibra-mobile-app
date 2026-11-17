@@ -33,6 +33,8 @@ export interface SubtopicDto {
   id: string;
   /** Display name. */
   name: string;
+  /** Optional curriculum description. */
+  description?: string | null;
   /** Course ordering. */
   displayOrder: number;
 }
@@ -46,6 +48,10 @@ export interface CourseDto {
   code: string;
   /** Teacher display name, or null when unavailable. */
   teacherName: string | null;
+  /** Academic metadata supplied by the enrolled course. */
+  term?: string | null;
+  faculty?: string | null;
+  semester?: string | null;
   /** Ordered curriculum. */
   subtopics: SubtopicDto[];
   /** Enrollment date in ISO format. */
@@ -86,13 +92,17 @@ export interface ProgressDto {
   /** Latest explanations. */
   recentFeedback: string[];
 }
-/** Pending invitation; the API omits its course identifier until acceptance. */
+/** Pending or expired invitation returned by the API. */
 export interface PendingInvitationDto {
   /** Invitation identifier. */
   id: string;
   /** Course display name. */
   courseName: string;
-  /** Sender email (the API does not return a teacher name here). */
+  /** Course identity and sender metadata; older responses may omit them. */
+  courseId?: string;
+  teacherName?: string | null;
+  status?: 'PENDING' | 'EXPIRED';
+  /** Sender email used when the display name is absent. */
   teacherEmail: string;
   /** Send date in ISO format. */
   sentAt: string;
@@ -127,6 +137,12 @@ export interface ExerciseDto {
   /** Answer values in key order. */
   options: string[];
 }
+/** Structured explanation supplied by the engine. */
+export interface ExplanationStepDto {
+  title: string;
+  detail: string;
+  kind: 'TEXT' | 'CODE' | 'FORMULA';
+}
 /** Recorded answer returned both on submission and in history. */
 export interface AttemptDto {
   /** Attempt identifier. */
@@ -139,6 +155,15 @@ export interface AttemptDto {
   result: 'CORRECT' | 'INCORRECT';
   /** Explanation returned by the adaptive engine. */
   explanation: string;
+  /** Active viewing seconds; absent on legacy attempts. */
+  timeSpentSeconds?: number | null;
+  /** Option keys and A–D texts; absent on legacy attempts. */
+  selectedOptionKey?: string | null;
+  correctOptionKey?: string | null;
+  options?: string[] | null;
+  /** Structured reasoning, with plain explanation retained for compatibility. */
+  explanationSteps?: ExplanationStepDto[] | null;
+  keyIdea?: string | null;
   /** Previous percentage, null when unknown. */
   previousMastery: number | null;
   /** Resulting percentage 0..100. */

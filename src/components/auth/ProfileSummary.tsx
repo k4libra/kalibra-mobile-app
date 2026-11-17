@@ -1,33 +1,48 @@
-/**
- * Academic identity and statistics composed from shared primitives.
- *
- * @author MRamirez202210582
- * @packageDocumentation
- */
-
 import React from 'react';
 import { StyleSheet, View, type ImageSourcePropType } from 'react-native';
-import { Avatar, Card, Chip, Icon, StatCard, Text } from '@/components/ui';
-import { colors, spacing } from '@/theme/tokens';
+import { Avatar, Chip, Icon, ProgressBar, Text } from '@/components/ui';
+import { colors } from '@/theme/tokens';
 import type { AuthUser, ProfileStats } from '@/types/auth';
-/** Props accepted by {@link ProfileSummary}. */
+import { masteryTone } from '@/utils/mastery';
+import { currentAcademicTerm } from '@/utils/term';
+
 export interface ProfileSummaryProps {
-  /** Current account identity. */
   user: AuthUser;
-  /** Academic totals for this account. */
   stats: ProfileStats;
-  /** Account photo when available. */
   avatar?: ImageSourcePropType;
 }
-/** Shows the account identity, institutional status and three academic statistics. */
+
+/** Account identity and measured mastery; totals belong to the separate stat strip. */
 export function ProfileSummary({ user, stats, avatar }: ProfileSummaryProps) {
-  return <Card style={styles.card}>
-    <View style={styles.identity}><Avatar name={user.fullName} source={avatar} isVerified /><View style={styles.copy}>
-      <Chip label="Estudiante universitario" icon="school" tone="success" />
-      <Text variant="headlineM">{user.fullName}</Text><Text variant="bodyM" color="secondary">{user.email}</Text>
-      {(user.faculty || user.semester) && <View style={styles.faculty}><Icon name="account_balance" size="xs" color={colors.primaryStrong} /><Text variant="labelM" color="brand">{[user.faculty, user.semester].filter(Boolean).join(' • ')}</Text></View>}
-    </View></View>
-    <View style={styles.stats}><StatCard value={String(stats.solvedExerciseCount)} label="Ejercicios resueltos" icon="check_circle" /><StatCard value={`${stats.averageMastery ?? 0}%`} label="Dominio promedio" icon="local_fire_department" tone="warning" /><StatCard value={String(stats.activeCourseCount)} label="Cursos activos" icon="menu_book" tone="success" /></View>
-  </Card>;
+  const mastery = stats.averageMastery;
+  const level = mastery === null ? 'Sin actividad' : mastery < 40 ? 'Nivel bajo' : mastery <= 70 ? 'Nivel medio' : 'Nivel alto';
+  const academicLabel = [user.faculty, user.semester, `Ciclo ${user.term?.trim() || currentAcademicTerm()}`].filter(Boolean).join(' · ');
+  return (
+    <View style={styles.card}>
+      <View style={styles.identity}>
+        <Avatar name={user.fullName} source={avatar} isVerified size={84} />
+        <View style={styles.copy}>
+          <Chip label="Estudiante universitario" icon="school" tone="success" />
+          <Text variant="headlineM">{user.fullName}</Text>
+          <Text variant="bodyM" color="secondary">{user.email}</Text>
+          <View style={styles.faculty}><Icon name="account_balance" size="xs" /><Text variant="bodyMBold" color="brand" style={styles.facultyText}>{academicLabel}</Text></View>
+        </View>
+      </View>
+      <View style={styles.mastery}>
+        <View style={styles.masteryLabels}><Text variant="bodyMBold" style={styles.masteryLabel}>Dominio promedio · {level}</Text><Text variant="bodyMBold" color={mastery !== null && mastery > 70 ? 'success' : 'brand'}>{mastery === null ? '—' : `${mastery} %`}</Text></View>
+        <ProgressBar value={mastery} tone={masteryTone(mastery)} label="Dominio promedio" />
+      </View>
+    </View>
+  );
 }
-const styles = StyleSheet.create({ card: { gap: spacing.xl }, identity: { flexDirection: 'row', alignItems: 'center', gap: spacing.xl }, copy: { flex: 1, minWidth: 0, gap: spacing.xs }, faculty: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs, flexWrap: 'wrap' }, stats: { flexDirection: 'row', gap: spacing.xs } });
+
+const styles = StyleSheet.create({
+  card: { padding: 18, borderRadius: 24, gap: 16, experimental_backgroundImage: `linear-gradient(110deg, ${colors.primaryContainer} 0%, ${colors.secondaryPale} 100%)` },
+  identity: { flexDirection: 'row', alignItems: 'center', gap: 14, minHeight: 110 },
+  copy: { flex: 1, minWidth: 0, gap: 4 },
+  faculty: { flexDirection: 'row', alignItems: 'flex-start', gap: 4 },
+  facultyText: { flex: 1 },
+  mastery: { minHeight: 52, paddingHorizontal: 12, paddingVertical: 10, backgroundColor: colors.white, borderRadius: 16, gap: 6 },
+  masteryLabels: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
+  masteryLabel: { flex: 1 },
+});

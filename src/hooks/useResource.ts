@@ -67,7 +67,7 @@ export function useResource<T>(loader: () => Promise<T>, key: string, refreshOnF
         if (isCurrent) setResult({ requestKey, data, error: null, errorCode: null });
       })
       .catch((reason: unknown) => {
-        const error = reason instanceof Error ? reason.message : 'No se pudo cargar la información.';
+        const error = normalizeAuthError(reason).message;
         if (isCurrent) setResult(previous => ({ requestKey, data: previous.requestKey === requestKey ? previous.data : null, error, errorCode: normalizeAuthError(reason).code }));
       });
     return () => {

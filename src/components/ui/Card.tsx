@@ -32,5 +32,5 @@ export function Card({ children, style }: CardProps) {
 }
 
 const styles = StyleSheet.create({
-  card: { backgroundColor: colors.surfaceCard, borderRadius: radius.lg, padding: spacing.xl, ...shadows.card },
+  card: { backgroundColor: colors.surfaceCard, borderRadius: radius.xxl, padding: spacing.xl, ...shadows.card },
 });

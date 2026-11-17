@@ -12,25 +12,25 @@ import type { IconName, Tone } from '@/types/ui';
 import { Icon, type IconSize } from './Icon';
 
 /**
- * Box presets: `sm` 32 pt, `md` 40 pt, `lg` 48 pt and `xl` 64 pt.
+ * Box presets: `sm` 32 pt, `md` 40 pt, `lg` 48 pt and `xl` 56 pt.
  */
 export type IconBoxSize = 'sm' | 'md' | 'lg' | 'xl';
 
 // Background and glyph color of each tone.
 const TONE: Record<Tone, { background: string; content: string }> = {
-  primary: { background: colors.primaryContainer, content: colors.primaryStrong },
-  success: { background: colors.secondaryContainer, content: colors.secondaryStrong },
-  warning: { background: colors.tertiaryPale, content: colors.tertiaryStrong },
+  primary: { background: colors.primaryContainerSoft, content: colors.primaryStrong },
+  success: { background: colors.secondaryPale, content: colors.secondaryStrong },
+  warning: { background: colors.tertiarySubtle, content: colors.tertiaryStrong },
   danger: { background: colors.dangerContainer, content: colors.dangerStrong },
-  neutral: { background: colors.primarySubtle, content: colors.contentSecondary },
+  neutral: { background: colors.white, content: colors.contentSecondary },
 };
 
 // Dimension, radius and glyph size of each preset.
 const SIZE: Record<IconBoxSize, { box: number; radius: number; icon: IconSize }> = {
   sm: { box: 32, radius: radius.sm, icon: 'md' },
-  md: { box: 40, radius: radius.md, icon: 'lg' },
-  lg: { box: 48, radius: radius.md, icon: 'xl' },
-  xl: { box: 64, radius: radius.full, icon: '2xl' },
+  md: { box: 40, radius: radius.lg, icon: 'lg' },
+  lg: { box: 48, radius: radius.lg, icon: 'xxl' },
+  xl: { box: 56, radius: radius.lg, icon: '2xl' },
 };
 
 /**
@@ -77,6 +77,7 @@ export function IconBox({ icon, tone = 'primary', size = 'lg', variant = 'filled
       style={[
         styles.box,
         { width: preset.box, height: preset.box, borderRadius: preset.radius, backgroundColor: variant === 'soft' ? colors.primaryContainerSoft : palette.background },
+        tone === 'neutral' && styles.neutral,
         style,
       ]}
     >
@@ -86,5 +87,6 @@ export function IconBox({ icon, tone = 'primary', size = 'lg', variant = 'filled
 }
 
 const styles = StyleSheet.create({
+  neutral: { borderWidth: 1, borderColor: colors.surfaceBorder },
   box: { alignItems: 'center', justifyContent: 'center' },
 });

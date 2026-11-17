@@ -13,8 +13,8 @@ import type { Tone } from '@/types/ui';
 // Fill color of each tone.
 const TONE: Record<Tone, string> = {
   primary: colors.primary,
-  success: colors.secondaryStrong,
-  warning: colors.tertiaryStrong,
+  success: colors.secondary,
+  warning: colors.tertiary,
   danger: colors.danger,
   neutral: colors.primaryPale,
 };
@@ -56,7 +56,7 @@ export function ProgressBar({ value, label, tone = 'primary', height = 8 }: Prog
       accessibilityRole="progressbar"
       accessibilityLabel={label}
       accessibilityValue={{ min: 0, max: 100, now: value ?? undefined }}
-      style={[styles.track, { height }]}
+      style={[styles.track, { height, backgroundColor: tone === 'success' ? colors.secondaryPale : tone === 'danger' ? colors.dangerContainer : tone === 'warning' ? colors.tertiarySubtle : colors.primarySubtle }]}
     >
       <View style={[styles.fill, { width: `${width}%`, backgroundColor: TONE[tone] }]} />
     </View>

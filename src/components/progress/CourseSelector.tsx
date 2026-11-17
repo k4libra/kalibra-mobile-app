@@ -39,13 +39,13 @@ export function CourseSelector({ courses, selectedCourseId, onSelect }: CourseSe
         style={styles.trigger}
       >
         <View style={styles.badge}>
-          <Icon name={selected.icon} size="md" color={colors.white} />
+          <Icon name={selected.icon} size="md" color={colors.primary} />
         </View>
         <View style={styles.flex}>
           <Text variant="labelM" color="secondary">
-            Curso Activo
+            Curso activo
           </Text>
-          <Text variant="title" numberOfLines={1}>
+          <Text variant="title">
             {selected.name}
           </Text>
         </View>
@@ -89,8 +89,8 @@ export function CourseSelector({ courses, selectedCourseId, onSelect }: CourseSe
 }
 
 const styles = StyleSheet.create({
-  trigger: { flexDirection: 'row', alignItems: 'center', gap: spacing.lg, padding: spacing.lg, borderRadius: radius.md, backgroundColor: colors.primarySubtle },
-  badge: { width: 28, height: 28, borderRadius: radius.sm, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.primary },
+  trigger: { flexDirection: 'row', alignItems: 'center', gap: spacing.lg, padding: 12, minHeight: 80, borderRadius: radius.xl, backgroundColor: colors.white, ...shadows.card },
+  badge: { width: 40, height: 40, borderRadius: radius.lg, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.primaryContainerSoft },
   flex: { flex: 1 },
   backdrop: { flex: 1, justifyContent: 'center', padding: spacing.gutter, backgroundColor: colors.overlay },
   sheet: { gap: spacing.md, ...shadows.floating },
