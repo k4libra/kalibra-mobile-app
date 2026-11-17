@@ -11,6 +11,7 @@ import { usePracticeSession } from '@/context/PracticeContext';
 import { practiceService } from '@/services/practice.service';
 import type { PracticeResult } from '@/types/exercise';
 import { useResource } from './useResource';
+import { normalizeAuthError } from '@/utils/auth';
 import { PRACTICE_SESSION_SIZE } from './usePracticeSession';
 
 /**
@@ -26,33 +27,33 @@ import { PRACTICE_SESSION_SIZE } from './usePracticeSession';
  * const { exercise, submit } = useExercise(courseId, subtopicId);
  * ```
  */
-export function useExercise(courseId: string, subtopicId: string) {
+export function useExercise(courseId: string, subtopicId?: string, mode?: 'EXPRESS') {
   const { session, registerExercise, recordAnswer } = usePracticeSession();
   const route = useContext(NavigationRouteContext);
   const hookId = useId();
   const routeKey = route?.key ?? hookId;
   const { data, isLoading, error, errorCode } = useResource(
-    () => practiceService.getNextExercise(courseId, subtopicId),
-    `exercise-${courseId}-${subtopicId}`,
+    () => practiceService.getNextExercise(courseId, subtopicId, mode),
+    `exercise-${courseId}-${mode ?? subtopicId}`,
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const pending = useRef(false);
   useEffect(() => {
-    if (data) registerExercise(courseId, subtopicId, routeKey);
-  }, [data, courseId, subtopicId, routeKey, registerExercise]);
+    if (data) registerExercise(courseId, data.subtopicId, routeKey, mode);
+  }, [data, courseId, subtopicId, routeKey, registerExercise, mode]);
 
-  const submit = useCallback(async (exerciseId: string, optionId: string): Promise<PracticeResult | null> => {
+  const submit = useCallback(async (exerciseId: string, optionId: string, timeSpentSeconds?: number): Promise<PracticeResult | null> => {
     if (pending.current) return null;
     pending.current = true;
     setIsSubmitting(true);
     setSubmitError(null);
     try {
-      const result = await practiceService.submitAnswer(exerciseId, optionId);
+      const result = await practiceService.submitAnswer(exerciseId, optionId, timeSpentSeconds);
       recordAnswer(routeKey, result.attemptId, result.isCorrect);
       return result;
     } catch (reason: unknown) {
-      setSubmitError(reason instanceof Error ? reason.message : 'No se pudo enviar la respuesta.');
+      setSubmitError(normalizeAuthError(reason).message);
       return null;
     } finally {
       pending.current = false;
@@ -88,5 +89,5 @@ export function usePracticeResult(attemptId: string) {
     sessionSize: PRACTICE_SESSION_SIZE,
     sessionOutcomes: session.outcomes,
   } : data;
-  return { result, isSessionComplete: result?.position === PRACTICE_SESSION_SIZE, isLoading, error };
+  return { result, isSessionComplete: result?.position === PRACTICE_SESSION_SIZE, mode: session?.attemptId === attemptId ? session.mode : undefined, isLoading, error };
 }

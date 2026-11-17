@@ -7,6 +7,7 @@
 
 import type { AttemptDto, CourseDto } from '@/types/api';
 import type { HistoryEntry } from '@/types/progress';
+import { formatRelativeDateTime } from '@/utils/term';
 /**
  * Maps an answer to its result route without inventing duration or review status.
  *
@@ -30,8 +31,8 @@ export function mapHistoryEntry(
     title: dto.statement,
     result: dto.result === 'CORRECT' ? 'correct' : 'incorrect',
     isPendingReview: false,
-    answeredAt: new Date(dto.answeredAt).toLocaleString('es-PE'),
+    answeredAt: formatRelativeDateTime(dto.answeredAt),
     isRecent: false,
-    duration: null,
+    duration: dto.timeSpentSeconds == null ? null : `${Math.floor(dto.timeSpentSeconds / 60)}m ${dto.timeSpentSeconds % 60}s`,
   };
 }

@@ -48,7 +48,7 @@ export function HistoryEntryCard({ entry, onOpen }: HistoryEntryCardProps) {
           </Text>
           {entry.duration && (
             <Text variant="bodyMBold" color={entry.result === 'correct' ? 'brand' : 'danger'}>
-              • {entry.duration}
+              · {entry.duration}
             </Text>
           )}
         </View>

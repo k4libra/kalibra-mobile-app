@@ -11,10 +11,10 @@ import type { PracticeExercise, PracticeResult } from '@/types/exercise';
  * Operations the student app needs to practice a subtopic.
  */
 export interface PracticeContract {
-  /** Fetches the next verified exercise for the current level of the student in a subtopic. */
-  getNextExercise: (courseId: string, subtopicId: string) => Promise<PracticeExercise>;
+  /** Fetches a verified subtopic exercise, or lets the server choose in EXPRESS mode. */
+  getNextExercise: (courseId: string, subtopicId?: string, mode?: 'EXPRESS') => Promise<PracticeExercise>;
   /** Records the chosen option and returns the result, the explanation and the mastery change. */
-  submitAnswer: (exerciseId: string, optionId: string) => Promise<PracticeResult>;
+  submitAnswer: (exerciseId: string, optionId: string, timeSpentSeconds?: number) => Promise<PracticeResult>;
   /** Fetches the result of a recorded answer; rejects when it does not exist. */
   getResult: (attemptId: string) => Promise<PracticeResult>;
 }

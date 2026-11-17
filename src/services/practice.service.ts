@@ -16,7 +16,7 @@ import {
   getCourseHistory,
 } from '@/services/http/studentData';
 import { mapExercise, mapResult } from '@/services/mappers/practice';
-const exercises = new Map<string, CourseDto>();
+const exercises = new Map<string, { course: CourseDto; exercise: ExerciseDto }>();
 const results = new Map<string, PracticeResult>();
 subscribeSession(() => {
   exercises.clear();
@@ -25,33 +25,37 @@ subscribeSession(() => {
 /** Retrieves verified exercises, records answers once and restores past results from history. */
 export const practiceService: PracticeContract = {
   /** {@inheritDoc PracticeContract.getNextExercise} */
-  async getNextExercise(courseId, subtopicId) {
+  async getNextExercise(courseId, subtopicId, mode) {
     const revision = getSessionRevision();
     const course = await getEnrolledCourse(courseId);
     if (revision !== getSessionRevision())
       throw new ApiError(401, 'UNAUTHORIZED');
     const dto = await apiClient.post<ExerciseDto>('/practice-exercises', {
       courseId,
-      subtopicId,
+      ...(mode === 'EXPRESS' ? { mode } : { subtopicId }),
     });
     if (revision !== getSessionRevision())
       throw new ApiError(401, 'UNAUTHORIZED');
-    exercises.set(dto.exerciseId, course);
+    exercises.set(dto.exerciseId, { course, exercise: dto });
     return mapExercise(dto, course);
   },
   /** {@inheritDoc PracticeContract.submitAnswer} */
-  async submitAnswer(exerciseId, optionId) {
+  async submitAnswer(exerciseId, optionId, timeSpentSeconds) {
     const revision = getSessionRevision();
-    const course = exercises.get(exerciseId);
-    if (!course) throw new ApiError(404, 'NOT_FOUND');
+    const loaded = exercises.get(exerciseId);
+    if (!loaded) throw new ApiError(404, 'NOT_FOUND');
+    const { course, exercise } = loaded;
     const dto = await apiClient.post<AttemptDto>('/exercise-attempts', {
       courseId: course.courseId,
       exerciseId,
       selectedOptionKey: optionId,
+      timeSpentSeconds,
     });
     if (revision !== getSessionRevision())
       throw new ApiError(401, 'UNAUTHORIZED');
     const result = mapResult(dto, course, exerciseId);
+    const value = exercise.options[optionId.charCodeAt(0) - 65];
+    if (!result.selectedAnswer && value !== undefined) result.selectedAnswer = { letter: optionId, value };
     results.set(dto.id, result);
     return result;
   },

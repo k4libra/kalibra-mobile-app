@@ -1,90 +1,65 @@
-/**
- * Step-by-step explanation of an exercise.
- *
- * @author G0nz4loQu3dena
- * @packageDocumentation
- */
-
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Card, Chip, Icon, IconBox, Text } from '@/components/ui';
-import { colors, fonts, radius, spacing } from '@/theme/tokens';
-import type { PracticeResult } from '@/types/exercise';
-
-/**
- * Props accepted by {@link ExplanationCard}.
- */
-export interface ExplanationCardProps {
-  /** Result whose explanation is shown. */
-  result: PracticeResult;
-}
-
-/**
- * Shows the explanation steps, the final summary and the learning tip of an answered exercise.
- */
+import { colors } from '@/theme/tokens';
+import type { ExplanationStep, PracticeResult, StatementSegment } from '@/types/exercise';
+import { splitStatement } from '@/utils/statement';
+import { CodeBlock } from './CodeBlock';
+import { FormulaBlock } from './FormulaBlock';
+import { RichText } from './RichText';
+export interface ExplanationCardProps { result: PracticeResult }
+/** Display structure follows actual paragraphs/code/math; no solution steps are invented. */
 export function ExplanationCard({ result }: ExplanationCardProps) {
-  return (
+  const steps = result.steps.length > 0
+    ? result.steps.map(step => ({ title: step.title, blocks: stepBlocks(step) }))
+    : explanationBlocks(result.explanation).map(block => ({ title: '', blocks: [block] }));
+  return <>
     <Card style={styles.card}>
-      <View style={styles.header}>
-        <IconBox icon="terminal" size="sm" />
-        <Text variant="headlineM" style={styles.flex} isHeading>
-          Explicación
-        </Text>
-        {result.explanationTag ? <Chip label={result.explanationTag} tone="neutral" /> : null}
+      <View style={styles.header}><IconBox icon="terminal" size="md" />
+        <Text variant="title" style={styles.flex} isHeading>Explicación paso a paso</Text>
+        <Chip label={result.explanationTag || 'Desglose'} icon="layers" tone="neutral" />
       </View>
-      {result.explanation ? <Text variant="bodyM">{result.explanation}</Text> : null}
-      {result.steps.map(step => (
-        <View key={step.order} style={[styles.step, step.isKey && styles.keyStep]}>
-          <View style={[styles.order, step.isKey && styles.keyOrder]}>
-            <Text variant="bodyMBold" color={step.isKey ? 'onPrimary' : 'brand'}>
-              {step.order}
-            </Text>
-          </View>
-          <View style={styles.flex}>
-            <View style={styles.stepHeader}>
-              <Text variant="bodyMBold" color={step.isKey ? 'success' : 'brand'} style={styles.mono}>
-                {step.expression}
-              </Text>
-              {step.isKey ? <Chip label={step.tag} tone="success" /> : <Text variant="labelS" color="muted">{step.tag}</Text>}
-            </View>
-            <Text variant="bodyM">{step.description}</Text>
-          </View>
-        </View>
-      ))}
-      {result.summaryValue ? <View style={styles.summary}>
-        <Icon name="functions" size="sm" color={colors.primaryStrong} />
-        <Text variant="bodyMBold" style={styles.flex}>
-          {result.summaryLabel}
-        </Text>
-        <Text variant="headlineM" color="brand">
-          {result.summaryValue}
-        </Text>
-      </View> : null}
-      {result.tipBody ? <View style={styles.tip}>
-        <Icon name="lightbulb" size="sm" color={colors.tertiaryStrong} />
+      {steps.map((step, index) => <View key={index} style={styles.step}>
+        <View style={styles.order}><Text variant="bodyMBold" color="brand">{index + 1}</Text></View>
         <View style={styles.flex}>
-          <Text variant="bodyMBold" color="warning">
-            {result.tipTitle}
-          </Text>
-          <Text variant="bodyM" color="secondary">
-            {result.tipBody}
-          </Text>
+          {step.title ? <Text variant="labelL">{step.title}</Text> : null}
+          {step.blocks.map((block, blockIndex) => <ExplanationBlock key={blockIndex} block={block} />)}
         </View>
-      </View> : null}
+      </View>)}
+      <View style={styles.summary}><Icon name={result.summaryValue ? 'functions' : result.isCorrect ? 'check_circle' : 'help'} />
+        <Text variant="labelL" style={styles.flex}>{result.summaryLabel || 'Resultado registrado'}</Text>
+        <Text variant="bodyMBold" color="brand">{result.summaryValue || (result.isCorrect ? 'Correcto' : 'Para repasar')}</Text>
+      </View>
     </Card>
-  );
+    <View style={styles.tip}><IconBox icon="lightbulb" tone="neutral" size="md" />
+      <View style={styles.flex}><Text variant="labelL" color="warning">{result.keyIdea ? 'Idea clave' : result.tipTitle || 'Clave de aprendizaje'}</Text>
+        <Text variant="bodyM">{result.keyIdea || result.tipBody || 'Compara tu respuesta con la explicación y vuelve a practicar para reforzar lo aprendido.'}</Text></View>
+    </View>
+  </>;
 }
-
-const styles = StyleSheet.create({
-  card: { gap: spacing.md },
-  header: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, marginBottom: spacing.xs },
-  flex: { flex: 1 },
-  step: { flexDirection: 'row', gap: spacing.lg, padding: spacing.lg, borderRadius: radius.md, backgroundColor: colors.primarySubtle },
-  keyStep: { backgroundColor: colors.secondaryContainer },
-  order: { width: 24, height: 24, borderRadius: radius.sm, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.primaryContainer },
-  keyOrder: { backgroundColor: colors.secondaryStrong },
-  stepHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: spacing.md },
-  mono: { fontFamily: fonts.mono },
-  summary: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.lg, borderRadius: radius.md, backgroundColor: colors.primaryContainerSoft },
-  tip: { flexDirection: 'row', gap: spacing.md, padding: spacing.lg, borderRadius: radius.md, backgroundColor: colors.tertiaryPale },
-});
+/** Keeps legacy prose short while preserving supplied code and formula blocks. */
+function explanationBlocks(explanation: string): StatementSegment[] {
+  return splitStatement(explanation).flatMap<StatementSegment>(segment => segment.type === 'prose'
+    ? segment.text.split(/\n\s*\n/).filter(Boolean).map(text => ({ type: 'prose', text })) : [segment]);
+}
+function stepBlocks(step: ExplanationStep): StatementSegment[] {
+  if (step.kind === 'CODE') {
+    // Fenced details retain their language; unmarked source is still rendered as code.
+    if (/^\s*(`{3,}|~{3,})/.test(step.detail)) return splitStatement(step.detail);
+    return [{ type: 'code', snippet: { source: step.detail, fileName: '', language: '' } }];
+  }
+  if (step.kind === 'FORMULA') {
+    const blocks = splitStatement(step.detail);
+    return blocks.some(block => block.type === 'formula') ? blocks : [{ type: 'formula', source: step.detail }];
+  }
+  return explanationBlocks(step.detail);
+}
+function ExplanationBlock({ block }: { block: StatementSegment }) {
+  return block.type === 'code' ? <CodeBlock snippet={block.snippet} />
+    : block.type === 'formula' ? <FormulaBlock source={block.source} /> : <RichText segments={[{ text: block.text }]} variant="bodyM" />;
+}
+const styles = StyleSheet.create({ card: { gap: 12 }, header: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 2 },
+  flex: { flex: 1, minWidth: 0, gap: 4 }, step: { flexDirection: 'row', gap: 12, padding: 12, borderRadius: 16, backgroundColor: colors.primarySubtle },
+  order: { width: 28, height: 28, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.white },
+  summary: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12, borderRadius: 16, backgroundColor: colors.primaryContainerSoft },
+  tip: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, padding: 16, borderRadius: 24, backgroundColor: colors.tertiarySubtle } });

@@ -20,6 +20,8 @@ export interface PracticeSession {
   courseId: string;
   /** Subtopic being practiced. */
   subtopicId: string;
+  /** Server-selected express practice across subtopics. */
+  mode?: 'EXPRESS';
   /** Route that loaded the most recent exercise. */
   routeKey: string;
   /** Current exercise number, from one through five. */
@@ -35,7 +37,7 @@ export interface PracticeSessionState {
   /** Active visit, or null outside practice. */
   session: PracticeSession | null;
   /** Counts a loaded exercise once per route, starting a visit when the scope changes. */
-  registerExercise: (courseId: string, subtopicId: string, routeKey: string) => void;
+  registerExercise: (courseId: string, subtopicId: string, routeKey: string, mode?: 'EXPRESS') => void;
   /** Records an outcome only for the current exercise and only once. */
   recordAnswer: (routeKey: string, attemptId: string, isCorrect: boolean) => void;
 }
@@ -62,25 +64,27 @@ export function usePracticeSessionState(): PracticeSessionState {
     const route = state?.routes[state.index];
     setStored(previous => {
       if (!previous) return null;
-      const params = route?.params as { courseId?: string; subtopicId?: string; attemptId?: string } | undefined;
+      const params = route?.params as { courseId?: string; subtopicId?: string; mode?: 'EXPRESS'; attemptId?: string } | undefined;
       const isExercise = route?.name === 'Exercise'
-        && params?.courseId === previous.courseId && params?.subtopicId === previous.subtopicId;
+        && params?.courseId === previous.courseId
+        && params?.mode === previous.mode && (previous.mode === 'EXPRESS' || params?.subtopicId === previous.subtopicId);
       const isResult = route?.name === 'ExerciseResult' && params?.attemptId === previous.attemptId;
       return isExercise || isResult ? previous : null;
     });
   }), [navigation]);
 
-  const registerExercise = useCallback((courseId: string, subtopicId: string, routeKey: string) => {
+  const registerExercise = useCallback((courseId: string, subtopicId: string, routeKey: string, mode?: 'EXPRESS') => {
     const state = navigation?.getRootState();
     const active = state?.routes[state.index];
     // A generator response may arrive after the student has left the practice route.
     if (navigation && active?.key !== routeKey) return;
     setStored(previous => {
-      if (previous && previous.accountId === accountId && previous.courseId === courseId && previous.subtopicId === subtopicId) {
+      if (previous && previous.accountId === accountId && previous.courseId === courseId
+        && previous.mode === mode && (mode === 'EXPRESS' || previous.subtopicId === subtopicId)) {
         if (previous.routeKey === routeKey || previous.position === PRACTICE_SESSION_SIZE) return previous;
-        return { ...previous, routeKey, position: previous.position + 1, attemptId: null };
+        return { ...previous, subtopicId, routeKey, position: previous.position + 1, attemptId: null };
       }
-      return { accountId, courseId, subtopicId, routeKey, position: 1, outcomes: [], attemptId: null };
+      return { accountId, courseId, subtopicId, mode, routeKey, position: 1, outcomes: [], attemptId: null };
     });
   }, [accountId, navigation]);
 

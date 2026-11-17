@@ -1,43 +1,29 @@
-/**
- * Sentence with inline code pieces.
- *
- * @author G0nz4loQu3dena
- * @packageDocumentation
- */
-
 import React from 'react';
 import { StyleSheet } from 'react-native';
-import { Text } from '@/components/ui';
+import { Text, type TextVariant } from '@/components/ui';
 import { colors, fonts } from '@/theme/tokens';
 import type { RichTextSegment } from '@/types/exercise';
-
-/**
- * Props accepted by {@link RichText}.
- */
-export interface RichTextProps {
-  /** Pieces of the sentence. */
-  segments: RichTextSegment[];
+import { readableFormula } from './FormulaBlock';
+export interface RichTextProps { segments: RichTextSegment[]; variant?: TextVariant }
+/** Retains supplied words while presenting explicit inline code, emphasis and TeX. */
+export function RichText({ segments, variant = 'bodyL' }: RichTextProps) {
+  return <Text variant={variant}>{segments.flatMap<React.ReactNode>((segment, index) => {
+    if (segment.isCode) return [<Text key={index} variant={variant} color="brand" style={styles.code}>{segment.text}</Text>];
+    const pattern = /(`[^`\n]+`|\*\*[^*\n]+\*\*|\\\([\s\S]*?\\\)|(?<!\\)\$[^$\n]+\$)/g;
+    const pieces: React.ReactNode[] = [];
+    let cursor = 0;
+    for (const match of segment.text.matchAll(pattern)) {
+      const start = match.index ?? 0;
+      if (start > cursor) pieces.push(segment.text.slice(cursor, start));
+      const token = match[0];
+      pieces.push(token.startsWith('`') ? <Text key={`${index}-${start}`} variant={variant} color="brand" style={styles.code}>{token.slice(1, -1)}</Text>
+        : token.startsWith('**') ? <Text key={`${index}-${start}`} variant={variant} style={styles.bold}>{token.slice(2, -2)}</Text>
+          : <Text key={`${index}-${start}`} variant={variant} color="brand" style={styles.formula}>{readableFormula(token)}</Text>);
+      cursor = start + token.length;
+    }
+    if (cursor < segment.text.length) pieces.push(segment.text.slice(cursor));
+    return pieces;
+  })}</Text>;
 }
-
-/**
- * Renders a sentence where code pieces use a monospace font on a tinted background.
- */
-export function RichText({ segments }: RichTextProps) {
-  return (
-    <Text>
-      {segments.map((segment, index) =>
-        segment.isCode ? (
-          <Text key={index} color="brand" style={styles.code}>
-            {segment.text}
-          </Text>
-        ) : (
-          segment.text
-        ),
-      )}
-    </Text>
-  );
-}
-
-const styles = StyleSheet.create({
-  code: { fontFamily: fonts.mono, backgroundColor: colors.primaryContainerSoft },
-});
+const styles = StyleSheet.create({ code: { fontFamily: fonts.mono, backgroundColor: colors.primaryContainerSoft },
+  formula: { fontFamily: fonts.formula }, bold: { fontFamily: fonts.bold } });

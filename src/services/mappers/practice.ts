@@ -8,8 +8,8 @@
 import type { AttemptDto, CourseDto, ExerciseDto } from '@/types/api';
 import type { PracticeExercise, PracticeResult } from '@/types/exercise';
 import { splitStatement } from '@/utils/statement';
+import { DIFFICULTY } from '@/utils/difficulty';
 
-const DIFFICULTY_LEVEL = { EASY: 1, MEDIUM: 2, HARD: 3 };
 /**
  * Maps statement and options using the API's A-D keys, without a fabricated session.
  *
@@ -33,9 +33,10 @@ export function mapExercise(
     subtopicName:
       course.subtopics.find(item => item.id === dto.subtopicId)?.name ?? '',
     area: course.name,
-    levelLabel: '',
-    difficultyLabel: dto.difficulty && DIFFICULTY_LEVEL[dto.difficulty]
-      ? `Dificultad adaptativa: Nivel ${DIFFICULTY_LEVEL[dto.difficulty]}`
+    difficulty: dto.difficulty,
+    levelLabel: dto.difficulty ? DIFFICULTY[dto.difficulty].label : '',
+    difficultyLabel: dto.difficulty
+      ? `Dificultad adaptativa: Nivel ${DIFFICULTY[dto.difficulty].level}`
       : '',
     position: null,
     sessionSize: null,
@@ -85,15 +86,26 @@ export function mapResult(
       ? 'Tu respuesta es correcta.'
       : 'Revisa la explicación para seguir aprendiendo.',
     masteryDelta: dto.masteryChanged ? dto.masteryDeltaPoints : 0,
+    currentMastery: dto.currentMastery,
     position: null,
     sessionSize: null,
     sessionOutcomes: [],
     explanation: dto.explanation,
     explanationTag: '',
-    steps: [],
+    selectedAnswer: mapAnswer(dto.selectedOptionKey, dto.options),
+    correctAnswer: mapAnswer(dto.correctOptionKey, dto.options),
+    steps: dto.explanationSteps ?? [],
+    keyIdea: dto.keyIdea,
     summaryLabel: '',
     summaryValue: '',
     tipTitle: '',
     tipBody: '',
   };
+}
+
+/** Resolves supplied option keys without inventing missing historical answers. */
+function mapAnswer(key?: string | null, options?: string[] | null) {
+  if (!key || !/^[A-D]$/.test(key)) return undefined;
+  const value = options?.[key.charCodeAt(0) - 65];
+  return value === undefined ? undefined : { letter: key, value };
 }

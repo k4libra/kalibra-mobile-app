@@ -29,6 +29,7 @@ export interface CodeSnippet {
 
 /** Ordered prose and code blocks extracted from a generated statement. */
 export type StatementSegment =
+  | { type: 'formula'; source: string }
   | {
       /** Prose block discriminator. */
       type: 'prose';
@@ -60,6 +61,8 @@ export interface AnswerOption {
  * Describes an exercise generated for the current level of the student.
  */
 export interface PracticeExercise {
+  /** Original server difficulty, preserved for calibration presentation. */
+  difficulty?: 'EASY' | 'MEDIUM' | 'HARD';
   /** Unique identifier assigned by the server. */
   id: string;
   /** Course of the exercise. */
@@ -100,22 +103,24 @@ export interface PracticeExercise {
  * Describes one step of the explanation of an exercise.
  */
 export interface ExplanationStep {
-  /** Position of the step, starting at 1. */
-  order: number;
-  /** Code or expression evaluated in the step. */
-  expression: string;
-  /** Short label at the end of the step, for example `Marco #1`. */
-  tag: string;
-  /** What happens in the step. */
-  description: string;
-  /** Whether the step is the key one (for example the base case). */
-  isKey: boolean;
+  /** Short supplied step title. */
+  title: string;
+  /** Supplied prose, source code or mathematical expression. */
+  detail: string;
+  /** Rendering chosen by the API. */
+  kind: 'TEXT' | 'CODE' | 'FORMULA';
 }
 
 /**
  * Describes the outcome of an answer with its explanation and mastery change.
  */
 export interface PracticeResult {
+  /** Exact resulting mastery returned by the server for the next guided exercise. */
+  currentMastery?: number;
+  /** Submitted option from the API or the account-scoped exercise cache. */
+  selectedAnswer?: { letter: string; value: string };
+  /** Optional verified answer, only when provided by the API. */
+  correctAnswer?: { letter: string; value: string };
   /** Identifier of the recorded answer. */
   attemptId: string;
   /** Exercise identifier; null when recovering a history entry without it. */
@@ -140,6 +145,8 @@ export interface PracticeResult {
   sessionOutcomes: boolean[];
   /** Full explanation from the server, without synthesized steps. */
   explanation: string;
+  /** Main learning point supplied by the API. */
+  keyIdea?: string | null;
   /** Short label of the explanation, for example `Pila LIFO`. */
   explanationTag: string;
   /** Steps of the explanation. */
