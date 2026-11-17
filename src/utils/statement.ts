@@ -17,7 +17,16 @@ function isCodeLine(line: string): boolean {
     || /^(?:return|break|continue|throw)\b.*;\s*$/.test(text)
     || /^(?:[}\]]\s*[;,){}]*|}\s*else(?:\s+if\s*\(.*\))?\s*{|else\s*{)\s*$/.test(text)
     || /^[\w.$]+\s*(?:\([^;]*\)|(?:\+\+|--|[+*/-]?=).*)\s*;\s*$/.test(text)
-    || /^(?:print|console\.log|System\.out\.print(?:ln)?)\s*\(/.test(text);
+    || /^(?:print|console\.log|System\.out\.print(?:ln)?)\s*\(/.test(text)
+    || /^(?:(?:public|private|protected|internal|abstract|sealed|static|final)\s+)*(?:ref\s+|value\s+)?(?:class|struct|interface|enum)\s+\w+/.test(text)
+    || /^(?:public|private|protected|internal)\s*:$/.test(text)
+    || /^(?:#include\b|using\s+namespace\b|import\s+[\w.]+)/.test(text)
+    || (!/^¿/.test(text) && /[;{]$/.test(text));
+}
+
+// A sentence that introduces or asks about the code stays prose even between code lines.
+function isSentence(line: string): boolean {
+  return /^¿|[.?!:]$/.test(line.trim()) && !/^(?:public|private|protected|internal)\s*:$/.test(line.trim());
 }
 
 /**
@@ -35,7 +44,7 @@ function isCodeLine(line: string): boolean {
  * splitStatement('Evaluate:\n    return 1;')[1].type; // 'code'
  * ```
  */
-export function splitStatement(statement: string): StatementSegment[] {
+function splitCodeStatement(statement: string): StatementSegment[] {
   if (!statement.trim()) return [];
   const lines = statement.replace(/\r\n?/g, '\n').split('\n');
   const segments: StatementSegment[] = [];
@@ -57,7 +66,15 @@ export function splitStatement(statement: string): StatementSegment[] {
     buffer = [];
   };
 
-  for (const line of lines) {
+  // Unfenced code arrives as one region: lines between two code lines join it unless they are
+  // sentences, so a snippet is never split into alternating prose and code blocks.
+  const codeLike = lines.map(line => !!line.trim() && (isCodeLine(line) || /^(?: {4}|\t)/.test(line)));
+  const firstCode = codeLike.indexOf(true);
+  const lastCode = codeLike.lastIndexOf(true);
+  const inRegion = (index: number) => firstCode >= 0 && index > firstCode && index < lastCode
+    && !!lines[index].trim() && !isSentence(lines[index]);
+
+  for (const [index, line] of lines.entries()) {
     const marker = line.match(/^\s*(`{3,}|~{3,})\s*([^\s`]*)\s*$/);
     if (fence) {
       if (marker && marker[1][0] === fence[0] && marker[1].length >= fence.length && !marker[2]) {
@@ -80,7 +97,7 @@ export function splitStatement(statement: string): StatementSegment[] {
       continue;
     }
     const isIndented: boolean = /^(?: {4}|\t)/.test(line) || (kind === 'code' && /^\s+\S/.test(line));
-    const nextKind: 'prose' | 'code' = isCodeLine(line) || isIndented ? 'code' : 'prose';
+    const nextKind: 'prose' | 'code' = isCodeLine(line) || isIndented || inRegion(index) ? 'code' : 'prose';
     if (nextKind !== kind) {
       flush();
       kind = nextKind;
@@ -88,5 +105,67 @@ export function splitStatement(statement: string): StatementSegment[] {
     buffer.push(line);
   }
   flush();
+  return segments;
+}
+
+/**
+ * Protects explicit code and math blocks before applying indentation heuristics to prose.
+ * Inline single-dollar math remains with its prose for the rich-text renderer.
+ */
+export function splitStatement(statement: string): StatementSegment[] {
+  const input = statement.replace(/\r\n?/g, '\n');
+  const segments: StatementSegment[] = [];
+  const tokens = /^[ \t]*(`{3,}|~{3,})[ \t]*([^\s`]*)[ \t]*$|\$\$|\\\[|^[ \t]*\\\(/gm;
+  let pendingStart = 0;
+  let match: RegExpExecArray | null;
+  const flushProse = (end: number) => segments.push(...splitCodeStatement(input.slice(pendingStart, end)));
+
+  while ((match = tokens.exec(input))) {
+    if (match[1]) {
+      const fence = match[1];
+      const language = match[2];
+      const bodyStart = tokens.lastIndex + (input[tokens.lastIndex] === '\n' ? 1 : 0);
+      const closing = /^[ \t]*(`{3,}|~{3,})[ \t]*$/gm;
+      closing.lastIndex = bodyStart;
+      let closingMatch: RegExpExecArray | null;
+      let bodyEnd = input.length;
+      let blockEnd = input.length;
+      while ((closingMatch = closing.exec(input))) {
+        if (closingMatch[1][0] === fence[0] && closingMatch[1].length >= fence.length) {
+          bodyEnd = closingMatch.index;
+          blockEnd = closing.lastIndex;
+          break;
+        }
+      }
+      flushProse(match.index);
+      const lines = input.slice(bodyStart, bodyEnd).split('\n');
+      while (lines.length && !lines[0].trim()) lines.shift();
+      while (lines.length && !lines[lines.length - 1].trim()) lines.pop();
+      if (lines.length) {
+        const source = lines.join('\n');
+        segments.push(/^(?:math|latex|tex)$/i.test(language)
+          ? { type: 'formula', source: source.trim() }
+          : { type: 'code', snippet: { source, fileName: '', language } });
+      }
+      pendingStart = blockEnd;
+      tokens.lastIndex = blockEnd;
+      continue;
+    }
+
+    const opener = match[0].trim();
+    const closer = opener === '$$' ? '$$' : opener === '\\[' ? '\\]' : '\\)';
+    const bodyStart = tokens.lastIndex;
+    const bodyEnd = input.indexOf(closer, bodyStart);
+    if (bodyEnd < 0) continue;
+    const blockEnd = bodyEnd + closer.length;
+    // Parenthesized math is a separate block only when it occupies its whole line.
+    if (opener === '\\(' && input.slice(blockEnd, input.indexOf('\n', blockEnd) < 0 ? input.length : input.indexOf('\n', blockEnd)).trim()) continue;
+    flushProse(match.index);
+    const source = input.slice(bodyStart, bodyEnd).trim();
+    if (source) segments.push({ type: 'formula', source });
+    pendingStart = blockEnd;
+    tokens.lastIndex = blockEnd;
+  }
+  flushProse(input.length);
   return segments;
 }
