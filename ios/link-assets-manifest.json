@@ -2,16 +2,20 @@
   "migIndex": 1,
   "data": [
     {
-      "path": "src/assets/fonts/MaterialSymbolsRounded-Regular.ttf",
-      "sha1": "39fae84821b047960c66cee3875bd672470b3fbb"
-    },
-    {
       "path": "src/assets/fonts/PlusJakartaSans-Bold.ttf",
       "sha1": "6970d903a122660a3be4c680dfd3b3f4075296d3"
     },
     {
+      "path": "src/assets/fonts/PlusJakartaSans-ExtraBold.ttf",
+      "sha1": "caeb3c483eb610768130314f5b67a39d999c859a"
+    },
+    {
       "path": "src/assets/fonts/PlusJakartaSans-Medium.ttf",
       "sha1": "b153e45b464703d5c6672d90f103c7547b7d1fd1"
+    },
+    {
+      "path": "src/assets/fonts/plusjakartasans-OFL.txt",
+      "sha1": "06a13446af986261b9604de9c012035fd95b193d"
     },
     {
       "path": "src/assets/fonts/PlusJakartaSans-Regular.ttf",
@@ -20,6 +24,30 @@
     {
       "path": "src/assets/fonts/PlusJakartaSans-SemiBold.ttf",
       "sha1": "604f00e0f277b1a5f8d0617f33846109d76e6266"
+    },
+    {
+      "path": "src/assets/fonts/RobotoMono-Bold.ttf",
+      "sha1": "4dab9dc06b38da2f68c8fffa980324913458b85c"
+    },
+    {
+      "path": "src/assets/fonts/RobotoMono-Medium.ttf",
+      "sha1": "80fd50e76e93b6c04648f61af6c5a6972ecde853"
+    },
+    {
+      "path": "src/assets/fonts/robotomono-OFL.txt",
+      "sha1": "d14d6672e51e0af6292e3a50e19f6f6747a58aef"
+    },
+    {
+      "path": "src/assets/fonts/RobotoMono-Regular.ttf",
+      "sha1": "51313ba165af6fdc4e6a45422a1df464600f3836"
+    },
+    {
+      "path": "src/assets/fonts/stixtwotext-OFL.txt",
+      "sha1": "241ed8c0d32ced1940b105af1831fbedb3ec56de"
+    },
+    {
+      "path": "src/assets/fonts/STIXTwoText-Regular.ttf",
+      "sha1": "80d106f03a9961083704c635e70c002513228f69"
     }
   ]
 }
