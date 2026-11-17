@@ -69,7 +69,7 @@ describe('useExercise', () => {
     await ReactTestRenderer.act(async () => {
       expect(await result().submit(result().exercise!.id, 'A')).toBeNull();
     });
-    expect(result().error).toBe('Try again');
+    expect(result().error).toBe('No se pudo completar la operación. Inténtalo más tarde.');
     expect(result().exercise?.position).toBe(1);
     await ReactTestRenderer.act(async () => {
       expect(await result().submit(result().exercise!.id, 'A')).toMatchObject({ isCorrect: true });

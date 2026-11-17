@@ -6,8 +6,8 @@
  */
 
 import { authService } from '@/services/auth.service';
-import { TEST_CREDENTIALS } from '@/test/apiFixtures';
-import { resetApiStub } from '@/test/fetchStub';
+import { TEST_CREDENTIALS, TEST_COURSES } from '@/test/apiFixtures';
+import { jsonResponse, resetApiStub } from '@/test/fetchStub';
 import { coursesService } from './courses.service';
 
 
@@ -29,4 +29,14 @@ describe('coursesService', () => {
   it('rejects an unknown course', async () => {
     await expect(coursesService.getCourse('missing')).rejects.toThrow();
   });
+});
+
+test('uses the enrolled term for student and profile even when it differs from the device date', async () => {
+  const fetchSpy = jest.mocked(globalThis.fetch);
+  const original = fetchSpy.getMockImplementation()!;
+  fetchSpy.mockImplementation((url, init) => String(url).endsWith('/students/me/courses')
+    ? Promise.resolve(jsonResponse(TEST_COURSES.map(course => ({ ...course, term: '2025-I' }))))
+    : original(url, init));
+  expect((await coursesService.getStudent()).term).toBe('2025-I');
+  expect((await authService.getProfile()).user.term).toBe('2025-I');
 });

@@ -53,6 +53,7 @@ export function resetApiStub() {
   let current: Account | null = null;
   let pending = true;
   let submitted = 0;
+  let expressGenerated = 0;
   return jest
     .spyOn(globalThis, 'fetch')
     .mockImplementation(async (input, init) => {
@@ -110,6 +111,7 @@ export function resetApiStub() {
           current.preferences.darkMode = body.darkMode === true;
         return jsonResponse(current.preferences);
       }
+      if (path === '/invitations?status=EXPIRED') return jsonResponse([]);
       if (path === '/invitations?status=PENDING')
         return jsonResponse(
           current.user.id === TEST_USER_DTO.id && pending
@@ -174,18 +176,15 @@ export function resetApiStub() {
         );
       }
       if (method === 'POST' && path === '/practice-exercises') {
-        if (
-          !current.courses.some(
-            course =>
-              course.courseId === body.courseId &&
-              course.subtopics.some(item => item.id === body.subtopicId),
-          )
-        )
-          return problem(404);
+        const course = current.courses.find(item => item.courseId === body.courseId);
+        const subtopicId = body.mode === 'EXPRESS'
+          ? course?.subtopics[expressGenerated++ % course.subtopics.length]?.id
+          : body.subtopicId;
+        if (!course?.subtopics.some(item => item.id === subtopicId)) return problem(404);
         return jsonResponse(
           {
-            exerciseId: `exercise-${String(body.subtopicId)}`,
-            subtopicId: body.subtopicId,
+            exerciseId: `exercise-${String(subtopicId)}`,
+            subtopicId,
             statement: 'Evalúa la suma de 5, 3 y 1.',
             options: ['9', '15', '8', 'Ninguna'],
           },
@@ -199,6 +198,10 @@ export function resetApiStub() {
           id: `submitted-${++submitted}`,
           subtopicId: String(body.exerciseId).replace('exercise-', ''),
           result: correct ? 'CORRECT' : 'INCORRECT',
+          timeSpentSeconds: body.timeSpentSeconds as number | undefined,
+          selectedOptionKey: String(body.selectedOptionKey),
+          correctOptionKey: 'A',
+          options: ['9', '15', '8', 'Ninguna'],
           masteryDeltaPoints: correct ? 9 : -2,
           currentMastery: correct ? 81 : 70,
         };

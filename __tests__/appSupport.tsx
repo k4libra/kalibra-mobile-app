@@ -22,7 +22,7 @@ function isActive(node: Instance): boolean {
 }
 /** Flushes HTTP promises and navigation timers. */
 export async function flush(): Promise<void> {
-  await ReactTestRenderer.act(async () => { jest.runAllTimers(); });
+  await ReactTestRenderer.act(async () => { jest.runOnlyPendingTimers(); });
 }
 /** Presses a control by its accessible label and waits for navigation. */
 export async function press(root: Instance, label: string | RegExp): Promise<void> {
@@ -57,5 +57,5 @@ export async function signInDemo(root: Instance): Promise<void> {
 }
 /** Unmounts the renderer and clears delayed navigation work. */
 export async function dispose(tree: ReactTestRenderer.ReactTestRenderer): Promise<void> {
-  await ReactTestRenderer.act(async () => { tree.unmount(); jest.runAllTimers(); });
+  await ReactTestRenderer.act(async () => { tree.unmount(); jest.runOnlyPendingTimers(); });
 }

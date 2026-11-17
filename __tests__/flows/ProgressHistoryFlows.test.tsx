@@ -21,7 +21,7 @@ test('reinforces the urgent subtopic from progress and opens the exercise', asyn
   tree = await renderApp();
   await signInDemo(tree.root);
   await press(tree.root, 'Progreso');
-  expect(hasText(tree.root, 'FOCO URGENTE')).toBe(true);
+  expect(hasText(tree.root, 'Foco prioritario')).toBe(true);
   expect(hasText(tree.root, 'Programación Dinámica')).toBe(true);
   await press(tree.root, 'Reforzar ahora');
   expect(hasText(tree.root, 'Enviar respuesta')).toBe(true);
@@ -59,4 +59,29 @@ test('shows the empty history and starts the first exercise', async () => {
   expect(hasText(tree.root, 'Todavía no tienes historial')).toBe(true);
   await press(tree.root, 'Resolver mi primer ejercicio');
   expect(hasText(tree.root, 'Enviar respuesta')).toBe(true);
+});
+
+
+test('filters correct answers, restores all entries and opens a saved result without posting', async () => {
+  tree = await renderApp();
+  await signInDemo(tree.root);
+  await press(tree.root, 'Historial');
+  const requests = jest.mocked(globalThis.fetch);
+  requests.mockClear();
+
+  await press(tree.root, /^Correctos/);
+  expect(hasText(tree.root, 'Evaluación de función recursiva misterio(n)')).toBe(true);
+  expect(hasText(tree.root, 'Rotación simple a la derecha en árbol AVL')).toBe(true);
+  expect(hasText(tree.root, 'Matriz de subsecuencia común más larga (LCS)')).toBe(false);
+  expect(tree.root.findAll(node => node.props.accessibilityLabel === 'Todos, 3').length).toBeGreaterThan(0);
+  expect(tree.root.findAll(node => node.props.accessibilityLabel === 'Correctos, 2').length).toBeGreaterThan(0);
+  expect(tree.root.findAll(node => node.props.accessibilityLabel === 'Para repasar, 1').length).toBeGreaterThan(0);
+  expect(requests.mock.calls.some(([url]) => String(url).includes('result=CORRECT'))).toBe(true);
+
+  await press(tree.root, /^Todos/);
+  expect(hasText(tree.root, 'Matriz de subsecuencia común más larga (LCS)')).toBe(true);
+  await press(tree.root, 'Evaluación de función recursiva misterio(n). Ver desglose');
+  expect(hasText(tree.root, '¡Respuesta correcta!')).toBe(true);
+  expect(hasText(tree.root, 'Se suman 5, 3 y 1: el resultado es 9.')).toBe(true);
+  expect(requests.mock.calls.filter(([, init]) => init?.method === 'POST')).toHaveLength(0);
 });

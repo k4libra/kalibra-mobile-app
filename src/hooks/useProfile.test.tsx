@@ -1,3 +1,4 @@
+import { AUTH_MESSAGES } from '@/utils/auth';
 /**
  * Tests for profile reads, preferences, confirmation and stale responses.
  *
@@ -28,12 +29,12 @@ test('loads the profile through the shared resource hook and updates preferences
 });
 test('exposes a failed read and a failed preference update', async () => {
   jest.spyOn(authService, 'getProfile').mockRejectedValue(new Error('Unavailable'));
-  await render(); expect(value.error).toBe('Unavailable');
+  await render(); expect(value.error).toBe(AUTH_MESSAGES.UNKNOWN_ERROR);
   jest.spyOn(authService, 'getProfile').mockResolvedValue(profile);
   await ReactTestRenderer.act(async () => value.refetch());
   jest.spyOn(authService, 'updatePreferences').mockRejectedValue(new Error('private server message'));
   await ReactTestRenderer.act(async () => { await value.setDailyReminders(false); });
-  expect(value.error).toBe('Ocurrió un error inesperado. Inténtalo nuevamente.');
+  expect(value.error).toBe(AUTH_MESSAGES.UNKNOWN_ERROR);
   expect(value.profile?.preferences.dailyReminders).toBe(true);
 });
 test('cancels logout without calling the endpoint and confirms it explicitly', async () => {

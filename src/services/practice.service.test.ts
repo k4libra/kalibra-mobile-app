@@ -44,3 +44,17 @@ test('clears cached results on sign-out and cannot expose them to a new account'
   await authService.signUp({ fullName: 'Student Two', email: 'estudiante.test4@upc.edu.pe', password: 'Example2025!' });
   await expect(practiceService.getResult('attempt-2')).rejects.toMatchObject({ status: 404 });
 });
+
+test('posts EXPRESS without a subtopic and uses the subtopic chosen by the server', async () => {
+  const exercise = await practiceService.getNextExercise('course-1', undefined, 'EXPRESS');
+  expect(exercise.subtopicId).toBe('sub-1');
+  expect(exercise.subtopicName).toBe('Recursividad y Backtracking');
+  expect(fetchSpy).toHaveBeenCalledWith(`${API_BASE_URL}/practice-exercises`, expect.objectContaining({ body: JSON.stringify({ courseId: 'course-1', mode: 'EXPRESS' }) }));
+});
+
+test.each([0, 102, 3600])('posts active time of %s seconds and retains server answers in the result', async timeSpentSeconds => {
+  const exercise = await practiceService.getNextExercise('course-1', 'sub-1');
+  const result = await practiceService.submitAnswer(exercise.id, 'C', timeSpentSeconds);
+  expect(fetchSpy).toHaveBeenCalledWith(`${API_BASE_URL}/exercise-attempts`, expect.objectContaining({ body: JSON.stringify({ courseId: 'course-1', exerciseId: exercise.id, selectedOptionKey: 'C', timeSpentSeconds }) }));
+  expect(result).toMatchObject({ selectedAnswer: { letter: 'C', value: '8' }, correctAnswer: { letter: 'A', value: '9' } });
+});

@@ -29,9 +29,10 @@ test.each([404, 503])('shows the practice state for HTTP %s without an endless l
   await press(tree.root, 'Continuar práctica');
   const spy = jest.spyOn(globalThis, 'fetch');
   const original = spy.getMockImplementation()!;
-  spy.mockImplementation((url, init) => String(url).endsWith('/practice-exercises') ? Promise.resolve(jsonResponse({ status }, status)) : original(url, init));
+  spy.mockImplementation((url, init) => String(url).endsWith('/practice-exercises') ? Promise.resolve(jsonResponse({ status, detail: 'Private database failure detail' }, status)) : original(url, init));
   await press(tree.root, /^(Practicar|Comenzar)$/);
-  expect(hasText(tree.root, status === 404 ? 'Aún no hay ejercicios aprobados para este subtema' : 'Servicio no disponible por el momento')).toBe(true);
+  expect(hasText(tree.root, status === 404 ? 'Aún no hay ejercicios aprobados para este subtema' : 'Servicio no disponible por el momento. Inténtalo más tarde.')).toBe(true);
+  expect(hasText(tree.root, 'Private database failure detail')).toBe(false);
   expect(tree.root.findAllByProps({ accessibilityLabel: 'Enviar respuesta' })).toHaveLength(0);
   expect(tree.root.findAll(node => String(node.type) === 'ActivityIndicator')).toHaveLength(0);
 });
@@ -57,4 +58,20 @@ test('refreshes the retained history tab after submitting an exercise', async ()
   await press(tree.root, 'Volver');
   await press(tree.root, 'Historial');
   expect(hasText(tree.root, '75% aciertos')).toBe(true);
+});
+
+test('shows retry-later copy for network failure without exposing internal details', async () => {
+  tree = await renderApp();
+  await signInDemo(tree.root);
+  await press(tree.root, 'Continuar práctica');
+  const spy = jest.spyOn(globalThis, 'fetch');
+  const original = spy.getMockImplementation()!;
+  spy.mockImplementation((url, init) => String(url).endsWith('/practice-exercises')
+    ? Promise.reject(new Error('Private network implementation detail'))
+    : original(url, init));
+  await press(tree.root, /^(Practicar|Comenzar)$/);
+  expect(hasText(tree.root, 'No se pudo conectar con el servidor. Revisa tu conexión e inténtalo más tarde.')).toBe(true);
+  expect(hasText(tree.root, 'Private network implementation detail')).toBe(false);
+  expect(tree.root.findAllByProps({ accessibilityLabel: 'Enviar respuesta' })).toHaveLength(0);
+  expect(tree.root.findAll(node => String(node.type) === 'ActivityIndicator')).toHaveLength(0);
 });

@@ -5,6 +5,7 @@
  * @packageDocumentation
  */
 
+import { AUTH_MESSAGES } from '@/utils/auth';
 import { authService } from '@/services/auth.service';
 import { TEST_CREDENTIALS } from '@/test/apiFixtures';
 import { resetApiStub } from '@/test/fetchStub';
@@ -41,10 +42,11 @@ describe('useResource', () => {
     expect(result.current().data).toEqual(['a']);
   });
 
-  it('exposes the error message of a failed request', async () => {
+  it('replaces private request errors with safe retry copy', async () => {
     const result = renderHook<ResourceState<string>>(() => useResource(() => Promise.reject(new Error('boom')), 'fail'));
     await flush();
-    expect(result.current().error).toBe('boom');
+    expect(result.current().error).toBe(AUTH_MESSAGES.UNKNOWN_ERROR);
+    expect(result.current().error).not.toContain('boom');
   });
 });
 

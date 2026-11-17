@@ -12,7 +12,11 @@ describe('masteryTone', () => {
   it('maps mastery levels to tones', () => {
     expect(masteryTone(null)).toBe('neutral');
     expect(masteryTone(33)).toBe('danger');
-    expect(masteryTone(62)).toBe('warning');
+    expect(masteryTone(62)).toBe('primary');
+    expect(masteryTone(40)).toBe('primary');
+    expect(masteryTone(70)).toBe('primary');
+    expect(masteryTone(70.1)).toBe('success');
+    expect(masteryTone(39.9)).toBe('danger');
     expect(masteryTone(81)).toBe('success');
   });
 });

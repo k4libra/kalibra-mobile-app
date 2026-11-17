@@ -155,3 +155,37 @@ test('uses the statement as the history title and keeps result navigation on the
     isPendingReview: false,
   });
 });
+
+test.each([0, 59, 60, 102, 3600])('formats real duration of %s seconds without replacing zero by a legacy fallback', timeSpentSeconds => {
+  expect(mapHistoryEntry({ ...TEST_ATTEMPTS[0], timeSpentSeconds }, TEST_COURSES[0]).duration)
+    .toBe(`${Math.floor(timeSpentSeconds / 60)}m ${timeSpentSeconds % 60}s`);
+});
+
+test('preserves structured reasoning and resolves both answer keys from historical option texts', () => {
+  const explanationSteps = [
+    { title: 'Identifica los datos', detail: 'Lee los sumandos.', kind: 'TEXT' as const },
+    { title: 'Evalúa', detail: 'return 9;', kind: 'CODE' as const },
+  ];
+  const result = mapResult({ ...TEST_ATTEMPTS[1], selectedOptionKey: 'B', correctOptionKey: 'A', options: ['9', '15', '8', 'Ninguna'], explanationSteps, keyIdea: 'Suma todos los términos.' }, TEST_COURSES[0]);
+  expect(result).toMatchObject({ selectedAnswer: { letter: 'B', value: '15' }, correctAnswer: { letter: 'A', value: '9' }, steps: explanationSteps, keyIdea: 'Suma todos los términos.' });
+});
+
+test('does not synthesize answers for incomplete legacy attempts', () => {
+  const result = mapResult({ ...TEST_ATTEMPTS[0], selectedOptionKey: 'A', correctOptionKey: 'B', options: null, explanationSteps: null, timeSpentSeconds: null }, TEST_COURSES[0]);
+  expect(result.selectedAnswer).toBeUndefined();
+  expect(result.correctAnswer).toBeUndefined();
+  expect(result.steps).toEqual([]);
+  expect(mapHistoryEntry({ ...TEST_ATTEMPTS[0], timeSpentSeconds: null }, TEST_COURSES[0]).duration).toBeNull();
+});
+
+test('maps enrolled academic metadata and supplied subtopic descriptions', () => {
+  const course = { ...TEST_COURSES[0], term: '2025-I', faculty: 'Ingeniería', semester: 'IV', subtopics: [{ ...TEST_COURSES[0].subtopics[0], description: 'Resuelve problemas recursivos.' }] };
+  expect(mapCourse(course, TEST_PROGRESS[0])).toMatchObject({ term: '2025-I', faculty: 'Ingeniería', semester: 'IV' });
+  expect(mapSubtopics(course, TEST_PROGRESS[0])[0].description).toBe('Resuelve problemas recursivos.');
+});
+
+test('uses invitation course identity, teacher name and explicit expired status', () => {
+  const dto = { ...TEST_INVITATION, courseId: 'course-4', teacherName: 'Profesora Test', status: 'EXPIRED' as const };
+  expect(mapInvitation(dto, Date.parse('2026-10-10T12:00:00Z'))).toMatchObject({ courseId: 'course-4', teacherName: 'Profesora Test', status: 'expired', validity: 'Vencida' });
+  expect(mapInvitation({ ...dto, teacherName: '  ' }).teacherName).toBe(TEST_INVITATION.teacherEmail);
+});

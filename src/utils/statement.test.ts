@@ -69,3 +69,46 @@ test('normalizes Windows line endings without altering code indentation', () => 
     snippet: { source: '  return 1;' },
   });
 });
+
+test('keeps indented display math together instead of treating formula rows as code', () => {
+  const source = '\\begin{bmatrix}\n    1 & 2 \\\\\n    3 & 4\n\\end{bmatrix}';
+  expect(splitStatement(`Considera:\n$$\n${source}\n$$\n¿Cuál es su rango?`)).toEqual([
+    { type: 'prose', text: 'Considera:' }, { type: 'formula', source }, { type: 'prose', text: '¿Cuál es su rango?' },
+  ]);
+});
+
+test.each(['math', 'latex', 'tex'])('renders %s fences as formulas while preserving their source', language => {
+  expect(splitStatement(`\`\`\`${language}\n\\frac{1}{2}\n\`\`\``)).toEqual([{ type: 'formula', source: '\\frac{1}{2}' }]);
+});
+
+test('does not parse mathematical delimiters inside actual code fences', () => {
+  const source = 'const literal = "$$x^2$$";';
+  expect(splitStatement(`\`\`\`js\n${source}\n\`\`\``)).toEqual([{ type: 'code', snippet: { source, language: 'js', fileName: '' } }]);
+});
+
+test('recognizes bracket math and standalone inline-math notation without losing prose', () => {
+  expect(splitStatement('Antes\n\\[ x^2 \\]\nDespués').map(segment => segment.type)).toEqual(['prose', 'formula', 'prose']);
+  expect(splitStatement('\\(x^2\\)')).toEqual([{ type: 'formula', source: 'x^2' }]);
+});
+
+test('keeps an unfenced C++/CLI class as one code block between its prose lines', () => {
+  const statement = [
+    'Dada la siguiente clase en C++/CLI:',
+    '',
+    'ref class Cuenta {',
+    'private:',
+    '    int saldo;',
+    'public:',
+    '    Cuenta(int s) { saldo = s; }',
+    '    void Depositar(int m) { saldo += m; }',
+    '};',
+    '',
+    '¿Qué valor retorna ObtenerSaldo tras depositar 50?',
+  ].join('\n');
+
+  const segments = splitStatement(statement);
+
+  expect(segments.map(segment => segment.type)).toEqual(['prose', 'code', 'prose']);
+  expect(segments[1].type === 'code' && segments[1].snippet.source.split('\n')[0]).toBe('ref class Cuenta {');
+  expect(segments[1].type === 'code' && segments[1].snippet.source.split('\n').at(-1)).toBe('};');
+});
